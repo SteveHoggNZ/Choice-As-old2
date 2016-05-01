@@ -1,10 +1,11 @@
+import Immutable from 'immutable'
 import { applyMiddleware, compose, createStore } from 'redux'
 import { routerMiddleware } from 'react-router-redux'
 import thunk from 'redux-thunk'
 
 import reducers from './reducers'
 
-export default (initialState = {}, history) => {
+export default (initialState = Immutable.Map(), history) => {
   let middleware = applyMiddleware(thunk, routerMiddleware(history))
 
   // Use DevTools chrome extension in development

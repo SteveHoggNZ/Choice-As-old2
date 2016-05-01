@@ -1,5 +1,6 @@
-import { combineReducers } from 'redux'
-import { routerReducer as router } from 'react-router-redux'
+import { combineReducers } from 'redux-immutable'
+import router from './immutableRouter'
+// import { routerReducer as router } from 'react-router-redux'
 
 export const reducers = (asyncReducers) => {
   return combineReducers({

@@ -7,6 +7,8 @@ export const createRoutes = (store) => {
     a simple javascript object to provide route definitions.
     When creating a new async route, pass the instantiated store!   */
 
+  console.log('createRoutes')
+
   const routes = {
     path: '/',
     component: CoreLayout,
