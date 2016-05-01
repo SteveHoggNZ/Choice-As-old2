@@ -1,0 +1,31 @@
+Current Goal:
+
+Figure out initial naming and state structure
+
+- A condition is made up of multiple setups.
+- A condition has multiple trials.
+- A participant has multiple trials.
+
+choiceas: {
+  entities: {
+    conditions: [
+      conditionID: {
+        setups: [],
+        trials: []
+      }
+    ],
+    setups: [],
+    trial: [],
+    participant: [
+      trials: []
+    ]
+  }
+}
+
+Future Goals:
+
+- Write probability module using TDD
+- Add new route for choice-as screen
+- Setup choice components and initial view
+
+================================================================================
