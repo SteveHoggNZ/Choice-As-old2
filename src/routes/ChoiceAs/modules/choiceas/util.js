@@ -1,8 +1,10 @@
+/* @flow */
+
 // Reference:
 // http://stackoverflow.com/questions/8435183/generate-a-weighted-random-number
-export const weightedRandomSelect = (spec) => {
+export const weightedRandomSelect = (spec: { [key: string]: number }) => {
   if (spec === undefined) {
-    throw new Error('Expected value in the form {key:weight, ...}')
+    throw new Error('Expected value in the form {key: weight, ...}')
   } else if (typeof spec !== 'object' || Object.keys(spec).length === 0) {
     throw new Error('Expected non-empty object as the first argument')
   }

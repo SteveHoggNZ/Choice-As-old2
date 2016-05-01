@@ -72,39 +72,43 @@ describe('(Util) weightedRandomSelect', () => {
     const loopCount = 500000
 
     it(`Should distribute 0.5 and 0.5 equally +- ${errorMargin} for ` +
-      `${loopCount} selections.`, () => {
-      confirmSelectWeights({
-        spec: {key1: 0.5, key2: 0.5},
-        loopCount,
-        errorMargin
+      `${loopCount} selections.`,
+      () => {
+        confirmSelectWeights({
+          spec: {key1: 0.5, key2: 0.5},
+          loopCount,
+          errorMargin
+        })
       })
-    })
 
     it(`Should distribute 0.1 and 0.9 properly +- ${errorMargin} for ` +
-      `${loopCount} selections.`, () => {
-      confirmSelectWeights({
-        spec: {key1: 0.1, key2: 0.9},
-        loopCount,
-        errorMargin
+      `${loopCount} selections.`,
+      () => {
+        confirmSelectWeights({
+          spec: {key1: 0.1, key2: 0.9},
+          loopCount,
+          errorMargin
+        })
       })
-    })
 
     it(`Should distribute 0.9 and 0.1 properly +- ${errorMargin} for ` +
-      `${loopCount} selections.`, () => {
-      confirmSelectWeights({
-        spec: {key1: 0.9, key2: 0.1},
-        loopCount,
-        errorMargin
+      `${loopCount} selections.`,
+      () => {
+        confirmSelectWeights({
+          spec: {key1: 0.9, key2: 0.1},
+          loopCount,
+          errorMargin
+        })
       })
-    })
 
     it(`Should distribute 0.2, 0.4, 0.1, 0.3 properly +- ${errorMargin} for ` +
-      `${loopCount} selections.`, () => {
-      confirmSelectWeights({
-        spec: {key1: 0.2, key2: 0.4, key3: 0.1, key4: 0.3},
-        loopCount,
-        errorMargin
+      `${loopCount} selections.`,
+      () => {
+        confirmSelectWeights({
+          spec: {key1: 0.2, key2: 0.4, key3: 0.1, key4: 0.3},
+          loopCount,
+          errorMargin
+        })
       })
-    })
   })
 })
