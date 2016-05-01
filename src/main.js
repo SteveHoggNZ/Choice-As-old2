@@ -19,10 +19,7 @@ const browserHistory = useRouterHistory(createBrowserHistory)({
 // react-router-redux of its location.
 const store = createStore(window.__INITIAL_STATE__, browserHistory)
 const history = syncHistoryWithStore(browserHistory, store, {
-  selectLocationState: (state) => {
-    console.log('selectLocationState')
-    return state.get('router').toJS()
-  }
+  selectLocationState: (state) => state.get('router').toJS()
 })
 
 let render = (key = null) => {

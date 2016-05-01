@@ -7,8 +7,6 @@ export const createRoutes = (store) => {
     a simple javascript object to provide route definitions.
     When creating a new async route, pass the instantiated store!   */
 
-  console.log('createRoutes')
-
   const routes = {
     path: '/',
     component: CoreLayout,
@@ -17,7 +15,6 @@ export const createRoutes = (store) => {
       require.ensure([], (require) => {
         next(null, [
           // Provide store for async reducers and middleware
-          require('./Counter').default(store),
           require('./ChoiceAs').default(store),
           require('./NotFound').default
         ])

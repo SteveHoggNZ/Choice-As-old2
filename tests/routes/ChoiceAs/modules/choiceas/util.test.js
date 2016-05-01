@@ -1,6 +1,6 @@
 import { util } from 'routes/ChoiceAs/modules/choiceas'
 
-describe('(Util) weightedRandomSelect', () => {
+describe('weightedRandomSelect', () => {
   it('Should be exported as a function.', () => {
     expect(util.weightedRandomSelect).to.be.a('function')
   })
