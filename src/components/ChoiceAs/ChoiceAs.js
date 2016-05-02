@@ -5,15 +5,12 @@ import ChoiceKey from './ChoiceKey'
 
 // FlowType annotations
 type Props = {
-  // isChoice: boolean
-  // counter: number,
-  // doubleAsync: Function,
-  // increment: Function
+  debug: boolean
 }
 
 export const ChoiceAs = (props: Props) => (
   <div>
-    <h1>Choice As!</h1>
+    <h1>Choice As!{props.debug ? ' Debug Mode' : ''}</h1>
     <div className={classes.choiceContainer}>
       <ChoiceKey id='Left' />
       <ChoiceKey id='Right' />
@@ -22,10 +19,7 @@ export const ChoiceAs = (props: Props) => (
 )
 
 ChoiceAs.propTypes = {
-  // isChoice: React.PropTypes.boolean.isRequired
-  // counter: React.PropTypes.number.isRequired,
-  // doubleAsync: React.PropTypes.func.isRequired,
-  // increment: React.PropTypes.func.isRequired
+  debug: React.PropTypes.bool.isRequired
 }
 
 export default ChoiceAs

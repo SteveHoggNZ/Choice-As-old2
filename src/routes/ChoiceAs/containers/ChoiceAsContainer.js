@@ -12,7 +12,10 @@ const mapActionCreators = {
   // doubleAsync
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state, ownProps) => ({
+  debug: ownProps && ownProps.location && ownProps.location.pathname
+    && ownProps.location.pathname.endsWith('/debug') || false
+  // filter: console.log(ownProps) && ownProps && ownProps.params && ownProps.params.filter || ''
   // counter: state.counter
 })
 
