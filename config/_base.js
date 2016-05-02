@@ -43,6 +43,8 @@ const config = {
     'react-router',
     'react-router-redux',
     'redux',
+    'redux-saga',
+    'reselect',
     'immutable',
     'redux-immutable'
   ],

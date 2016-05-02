@@ -10,10 +10,14 @@ export default (store) => ({
       /*  Webpack - use require callback to define
           dependencies for bundling   */
       const ChoiceAs = require('./containers/ChoiceAsContainer').default
-      const reducer = require('./modules/choiceas/reducer').default
+
+      const { reducer, saga } = require('./modules/choiceas')
 
       /*  Add the reducer to the store on key 'choiceas'  */
       injectReducer(store, { key: 'choiceas', reducer })
+
+      /*  Start running the Saga  */
+      store.sagaMiddleware.run(saga)
 
       /*  Return getComponent   */
       cb(null, ChoiceAs)
@@ -21,6 +25,7 @@ export default (store) => ({
     }, 'choiceas')
   },
   childRoutes: [
-    { path: 'debug' }
+    { path: 'debug' },
+    { path: 'test' }
   ]
 })
