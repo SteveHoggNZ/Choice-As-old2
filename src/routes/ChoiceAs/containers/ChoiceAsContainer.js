@@ -1,5 +1,6 @@
+import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-// import { } from '../modules/choiceas'
+import { actions } from '../modules/choiceas'
 
 import ChoiceAs from 'components/ChoiceAs'
 
@@ -7,16 +8,17 @@ import ChoiceAs from 'components/ChoiceAs'
     Keys will be passed as props to presentational components. Here we are
     implementing our wrapper around increment; the component doesn't care   */
 
+console.log('actions', actions.testRun)
+
 const mapActionCreators = {
-  // increment: () => increment(1),
-  // doubleAsync
+  testRun: () => actions.testRun(100)
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  debug: ownProps && ownProps.location && ownProps.location.pathname
-    && ownProps.location.pathname.endsWith('/debug') || false
-  // filter: console.log(ownProps) && ownProps && ownProps.params && ownProps.params.filter || ''
-  // counter: state.counter
+  debug: ownProps && ownProps.location && ownProps.location.pathname &&
+    ownProps.location.pathname.endsWith('/debug') || false,
+  test: ownProps && ownProps.location && ownProps.location.pathname &&
+    ownProps.location.pathname.endsWith('/test') || false
 })
 
 /*  Note: mapStateToProps is where you should use `reselect` to create selectors, ie:

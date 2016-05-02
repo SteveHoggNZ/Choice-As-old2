@@ -1,11 +1,14 @@
 /* @flow */
 import { takeEvery } from 'redux-saga'
-import { call, put, fork } from 'redux-saga/effects'
+import { call, put, fork, select } from 'redux-saga/effects'
 import * as constants from './constants'
 // import * as actions from './actions'
+import * as selectors from './selectors'
 
 export function * testRun (action) {
-  console.log('Saga got action', action)
+  const { conditions, keys } = yield select(selectors.getConditionsAndKeys)
+
+  yield call(console.log, ['Got state', conditions, keys])
   // try {
   //   if (!action || !action.payload || !action.payload.todolistid) {
   //     throw new Error('Expected argument todolistid in action.payload')

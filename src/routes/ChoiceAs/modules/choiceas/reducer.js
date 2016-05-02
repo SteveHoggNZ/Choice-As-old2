@@ -13,21 +13,21 @@ const ACTION_HANDLERS = {
 const initialState = Immutable.fromJS({
   entities: {
     conditions: {
-      1: {
+      condition1: {
         name: 'Condition 1',
         keys: [
           ['l5', 'r5'],
           ['l1', 'r9']
         ]
       },
-      2: {
+      condition2: {
         name: 'Condition 2',
         keys: [
           ['l5', 'r5'],
           ['l5', 'r5']
         ]
       },
-      3: {
+      condition3: {
         name: 'Condition 3',
         keys: [
           ['l5', 'r5'],
@@ -61,6 +61,11 @@ const initialState = Immutable.fromJS({
         probability: 0.9
       }
     }
+  },
+  test: {
+    running: false,
+    lastrun: undefined,
+    results: {}
   }
 })
 export default (
