@@ -1,4 +1,5 @@
 import { injectReducer } from '../../store/reducers'
+import { startSaga } from '../../store/sagas'
 
 export default (store) => ({
   path: 'choiceas',
@@ -10,14 +11,13 @@ export default (store) => ({
       /*  Webpack - use require callback to define
           dependencies for bundling   */
       const ChoiceAs = require('./containers/ChoiceAsContainer').default
-
       const { reducer, saga } = require('./modules/choiceas')
 
       /*  Add the reducer to the store on key 'choiceas'  */
       injectReducer(store, { key: 'choiceas', reducer })
 
       /*  Start running the Saga  */
-      store.sagaMiddleware.run(saga)
+      startSaga(store, { key: 'choiceas', saga })
 
       /*  Return getComponent   */
       cb(null, ChoiceAs)

@@ -24,6 +24,7 @@ export default (initialState = Immutable.Map(), history) => {
   const store = createStore(reducers(), initialState, middleware)
 
   store.asyncReducers = {}
+  store.runningSagas = {}
   store.sagaMiddleware = sagaMiddleware
 
   if (module.hot) {
