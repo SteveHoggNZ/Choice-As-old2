@@ -1,6 +1,42 @@
+Current Goal: Write tests that prove reinforcer probabilities for conditions
+
+Future Goals:
+- Add Flow type notation as I go
+- Write initial click-n-show reinforcer code
+- Work out where the trial data is recorded to
+
+Condition === Setup
+
+choiceas: {
+  entities: {
+    conditions: {
+      [conditionID]: {
+        keys: [
+          [k1, k2],
+          [k3, k4]
+        ]
+      }
+    },
+    keys: {
+      [keyID]: {
+        name,
+        probability
+      }
+    },
+    trials: {},
+    participant: {}
+    test: {}          // GUI test
+  }
+}
+
+================================================================================
+
 Current Goal:
 
 Figure out initial naming and state structure
+- Write probability module using TDD
+- Add new route for choice-as screen
+- Setup choice components and initial view
 
 - A condition is made up of multiple setups.
 - A condition has multiple trials.
@@ -21,11 +57,5 @@ choiceas: {
     ]
   }
 }
-
-Future Goals:
-
-- Write probability module using TDD
-- Add new route for choice-as screen
-- Setup choice components and initial view
 
 ================================================================================

@@ -15,6 +15,7 @@ const config = {
   dir_dist   : 'dist',
   dir_server : 'server',
   dir_test   : 'tests',
+  dir_test_tape   : 'tests_tape',
 
   // ----------------------------------
   // Server Configuration

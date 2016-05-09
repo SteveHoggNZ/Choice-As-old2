@@ -17,6 +17,9 @@
     "dev:no-debug": "npm run dev -- --no_debug",
     "test": "better-npm-run test",
     "test:dev": "npm run test -- --watch",
+    "test:tape": "better-npm-run test:tape",
+    "test:tape:dev": "npm run test:tape -- --watch",
+    "test:tape:faucet": "cat /dev/null > logs/test-console.log; clear; echo 'watching tape log...'; tail -f logs/test-console.log | faucet",
     "deploy": "better-npm-run deploy",
     "deploy:dev": "better-npm-run deploy:dev",
     "deploy:prod": "better-npm-run deploy:prod",
@@ -69,6 +72,13 @@
         "NODE_ENV": "test",
         "DEBUG": "app:*"
       }
+    },
+    "test:tape": {
+      "command": "cat /dev/null > logs/test-console.log ; babel-node ./node_modules/karma/bin/karma start build/karma-tape.conf",
+      "env": {
+        "NODE_ENV": "test",
+        "DEBUG": "app:*"
+      }
     }
   },
   "repository": {
@@ -82,6 +92,7 @@
     "babel-core": "^6.3.17",
     "babel-loader": "^6.2.0",
     "babel-plugin-transform-runtime": "^6.3.13",
+    "babel-polyfill": "^6.8.0",
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-react": "^6.3.13",
     "babel-preset-react-optimize": "^1.0.1",
@@ -127,6 +138,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.0.0-beta.6",
+    "blue-tape": "^0.2.0",
     "chai": "^3.4.1",
     "chai-as-promised": "^5.1.0",
     "chai-enzyme": "^0.4.0",
@@ -143,13 +155,17 @@
     "eslint-plugin-standard": "^1.3.1",
     "flow-bin": "0.23.0",
     "flow-interfaces": "^0.6.0",
+    "fs": "0.0.2",
     "isparta-loader": "^2.0.0",
     "karma": "^0.13.21",
     "karma-chrome-launcher": "^0.2.3",
     "karma-coverage": "^0.5.0",
+    "karma-log-reporter": "0.0.4",
     "karma-mocha": "^0.2.0",
     "karma-mocha-reporter": "^2.0.0",
     "karma-phantomjs-launcher": "^1.0.0",
+    "karma-tap": "^1.0.4",
+    "karma-tape-reporter": "^1.0.3",
     "karma-webpack-with-fast-source-maps": "^1.9.2",
     "mocha": "^2.2.5",
     "nodemon": "^1.8.1",

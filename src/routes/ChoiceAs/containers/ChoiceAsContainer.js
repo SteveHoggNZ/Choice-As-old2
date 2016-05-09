@@ -8,8 +8,6 @@ import ChoiceAs from 'components/ChoiceAs'
     Keys will be passed as props to presentational components. Here we are
     implementing our wrapper around increment; the component doesn't care   */
 
-console.log('actions', actions.testRun)
-
 const mapActionCreators = {
   testRun: () => actions.testRun(100)
 }

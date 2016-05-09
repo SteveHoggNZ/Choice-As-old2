@@ -3,7 +3,7 @@ import * as constants from './constants'
 import * as actions from './actions'
 import * as selectors from './selectors'
 import reducer from './reducer'
-import saga from './saga'
+import sagamain, * as sagas from './sagas'
 
 export {
   util,
@@ -11,5 +11,6 @@ export {
   actions,
   selectors,
   reducer,
-  saga
+  sagas,
+  sagamain
 }

@@ -18,3 +18,14 @@ export const getConditionsAndKeys = createSelector(
       keys
     }
   })
+
+const _getTestResult = (state) =>
+  state.getIn([STATE_PATH, 'test'])
+
+export const getTestResult = createSelector(
+  _getTestResult,
+  (_test) => {
+    const test = _test.toJS()
+    return { test }
+  }
+)

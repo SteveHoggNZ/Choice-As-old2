@@ -2,6 +2,8 @@ export const STATE_PATH = 'choiceas'
 
 export const PREFIX = 'choiceas/'
 
+export const ERROR = `${PREFIX}ERROR`
+
 export const CONDITION_START = `${PREFIX}CONDITION_START`
 export const CONDITION_END = `${PREFIX}CONDITION_END`
 

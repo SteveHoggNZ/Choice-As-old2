@@ -11,13 +11,13 @@ export default (store) => ({
       /*  Webpack - use require callback to define
           dependencies for bundling   */
       const ChoiceAs = require('./containers/ChoiceAsContainer').default
-      const { reducer, saga } = require('./modules/choiceas')
+      const { reducer, sagamain } = require('./modules/choiceas')
 
       /*  Add the reducer to the store on key 'choiceas'  */
       injectReducer(store, { key: 'choiceas', reducer })
 
       /*  Start running the Saga  */
-      startSaga(store, { key: 'choiceas', saga })
+      startSaga(store, { key: 'choiceas', saga: sagamain })
 
       /*  Return getComponent   */
       cb(null, ChoiceAs)
