@@ -13,11 +13,11 @@ it('Should export the constants from the constants file', () => {
   expect(constants).to.deep.equal(constantsDirect, 'objects are equal')
 })
 
-it('Should export a PREFIX constant', () =>{
+it('Should export a PREFIX constant', () => {
   expect(constants.PREFIX).to.not.equal(undefined)
 })
 
-it('Should export required constants', () =>{
+it('Should export required constants', () => {
   util.hasConst('CONDITION_START')
   util.hasConst('CONDITION_END')
   util.hasConst('TRIAL_START')

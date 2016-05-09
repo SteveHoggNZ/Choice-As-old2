@@ -11,4 +11,5 @@ describe('(Redux Module) ChoiceAs', () => {
   importTest('(Constants)', './constants.test.js')
   importTest('(Actions)', './actions.test.js')
   importTest('(Reducer)', './reducer.test.js')
+  importTest('(Sagas)', './sagas.test.js')
 })
