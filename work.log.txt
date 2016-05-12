@@ -1,9 +1,13 @@
 Current Goal: Write tests that prove reinforcer probabilities for conditions
 
 Future Goals:
-- Add Flow type notation as I go
+- Change back to non-immutable root for state
+- Unit test interface
+- Add Flow type notation
+- Re-write tests in Mocha for comparison
+- Travis CI badge?
 - Write initial click-n-show reinforcer code
-- Work out where the trial data is recorded to
+- Work out where the trial data is recorded to (Google Sheets?)
 
 Condition === Setup
 

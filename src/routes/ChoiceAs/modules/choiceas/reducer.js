@@ -1,5 +1,6 @@
 /* @flow */
 import Immutable from 'immutable'
+import config from 'config'
 import * as constants from './constants'
 
 const ACTION_HANDLERS = {
@@ -12,60 +13,8 @@ const ACTION_HANDLERS = {
 // ------------------------------------
 const initialState = Immutable.fromJS({
   entities: {
-    conditions: {
-      condition1: {
-        name: 'Condition 1',
-        keys: [
-          ['l5', 'r5'],
-          ['l1', 'r9']
-        ]
-      },
-      condition2: {
-        name: 'Condition 2',
-        keys: [
-          ['l5', 'r5'],
-          ['l5', 'r5']
-        ]
-      },
-      condition3: {
-        name: 'Condition 3',
-        keys: [
-          ['l5', 'r5'],
-          ['l9', 'r1']
-        ]
-      }
-    },
-    keys: {
-      l5: {
-        name: 'left',
-        probability: 0.5
-      },
-      l1: {
-        name: 'left',
-        probability: 0.1
-      },
-      l9: {
-        name: 'left',
-        probability: 0.9
-      },
-      r5: {
-        name: 'right',
-        probability: 0.5
-      },
-      r1: {
-        name: 'right',
-        probability: 0.1
-      },
-      r9: {
-        name: 'right',
-        probability: 0.9
-      }
-    }
-  },
-  test: {
-    running: false,
-    lastrun: undefined,
-    results: {}
+    conditions: config.conditions,
+    keys: config.keys
   }
 })
 export default (

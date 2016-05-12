@@ -1,4 +1,4 @@
-import { h, sh } from './util'
+import { h, sh } from './test_util'
 
 h('----------------------------')
 

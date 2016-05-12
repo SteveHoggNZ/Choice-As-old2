@@ -1,5 +1,5 @@
 import test from 'blue-tape'
-import { h, sh } from '../../../../util'
+import { h, sh } from '../../../../test_util'
 
 h('(Redux Module) ChoiceAs')
 sh('(Constants)')

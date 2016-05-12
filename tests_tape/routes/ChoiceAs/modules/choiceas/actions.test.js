@@ -1,4 +1,4 @@
-import { st, sh } from '../../../../util'
+import { st, sh } from '../../../../test_util'
 
 import * as actionsDirect from 'routes/ChoiceAs/modules/choiceas/actions'
 import {

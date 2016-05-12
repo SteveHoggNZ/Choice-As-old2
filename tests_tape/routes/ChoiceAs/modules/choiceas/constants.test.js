@@ -1,4 +1,4 @@
-import { t } from '../../../../util'
+import { t } from '../../../../test_util'
 
 import * as constantsDirect from 'routes/ChoiceAs/modules/choiceas/constants'
 import { constants } from 'routes/ChoiceAs/modules/choiceas'

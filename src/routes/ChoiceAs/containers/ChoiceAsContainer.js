@@ -1,6 +1,6 @@
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { actions } from '../modules/choiceas'
+// import { actions, selectors } from '../modules/choiceas'
 
 import ChoiceAs from 'components/ChoiceAs'
 
@@ -8,9 +8,7 @@ import ChoiceAs from 'components/ChoiceAs'
     Keys will be passed as props to presentational components. Here we are
     implementing our wrapper around increment; the component doesn't care   */
 
-const mapActionCreators = {
-  testRun: () => actions.testRun(100)
-}
+const mapActionCreators = {}
 
 const mapStateToProps = (state, ownProps) => ({
   debug: ownProps && ownProps.location && ownProps.location.pathname &&

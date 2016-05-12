@@ -1,4 +1,4 @@
-import { h, hh, t, tt, st } from '../../util'
+import { h, hh, t, tt, st } from '../../test_util'
 import test from 'blue-tape'
 import HomeRoute from 'routes/Home'
 

@@ -1,9 +1,8 @@
-import { injectReducer } from '../../store/reducers'
-import { startSaga } from '../../store/sagas'
-import childRoutes from './routes'
+import { injectReducer } from 'store/reducers'
+import { startSaga } from 'store/sagas'
 
 export default (store) => ({
-  path: 'choiceas',
+  path: 'trial',
   /*  Async getComponent is only invoked when route matches   */
   getComponent (nextState, cb) {
     /*  Webpack - use 'require.ensure' to create a split point
@@ -11,19 +10,19 @@ export default (store) => ({
     require.ensure([], (require) => {
       /*  Webpack - use require callback to define
           dependencies for bundling   */
-      const ChoiceAs = require('./containers/ChoiceAsContainer').default
-      const { reducer, sagamain } = require('./modules/choiceas')
+      const Trial = require('./containers/TrialContainer').default
+      const { reducer, sagas } = require('./modules/trial')
 
       /*  Add the reducer to the store on key 'choiceas'  */
-      injectReducer(store, { key: 'choiceas', reducer })
+      injectReducer(store, { key: 'trial', reducer })
 
       /*  Start running the Saga  */
-      startSaga(store, { key: 'choiceas', saga: sagamain })
+      startSaga(store, { key: 'trial', saga: sagas.sagaMain })
 
       /*  Return getComponent   */
-      cb(null, ChoiceAs)
+      cb(null, Trial)
     /* Webpack named bundle   */
-    }, 'choiceas')
+    }, 'choiceas-trial')
   },
-  childRoutes: childRoutes(store)
+  childRoutes: [ { path: '*' } ]
 })

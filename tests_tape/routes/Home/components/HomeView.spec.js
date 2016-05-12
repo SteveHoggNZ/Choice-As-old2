@@ -1,4 +1,4 @@
-import { h, t, st } from '../../../util'
+import { h, t, st } from '../../../test_util'
 import test from 'blue-tape'
 import React from 'react'
 import { HomeView } from 'routes/Home/components/HomeView'

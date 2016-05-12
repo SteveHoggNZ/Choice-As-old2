@@ -1,4 +1,4 @@
-import { ssh, t, st } from '../../../../util'
+import { ssh, t, st } from '../../../../test_util'
 import { util } from 'routes/ChoiceAs/modules/choiceas'
 
 ssh('weightedRandomSelect')

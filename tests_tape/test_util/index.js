@@ -18,5 +18,6 @@ export const st = (name, cb) => {
 /* headings */
 export const h = (name) => test(name, (a) => a.end())
 export const hh = (name) => test(`${testPrefix} ${name}`, (a) => a.end())
+export const hhh = (name) => test(`${testPrefix}${testPrefix} ${name}`, (a) => a.end())
 export const sh = (name) => h('- ' + name)
 export const ssh = (name) => h('-- ' + name)

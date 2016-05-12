@@ -4,13 +4,21 @@ import classes from './Header.scss'
 
 export const Header = () => (
   <div>
-    <h1>React Redux Starter Kit</h1>
+    <h1>Choice As!</h1>
     <IndexLink to='/' activeClassName={classes.activeRoute}>
       Home
     </IndexLink>
     {' · '}
-    <Link to='/choiceas' activeClassName={classes.activeRoute}>
+    <IndexLink to='/choiceas' activeClassName={classes.activeRoute}>
       Choice As
+    </IndexLink>
+    {' · '}
+    <Link to='/choiceas/trial' activeClassName={classes.activeRoute}>
+      Choice As Trial
+    </Link>
+    {' · '}
+    <Link to='/choiceas/test' activeClassName={classes.activeRoute}>
+      Choice As Test
     </Link>
   </div>
 )
