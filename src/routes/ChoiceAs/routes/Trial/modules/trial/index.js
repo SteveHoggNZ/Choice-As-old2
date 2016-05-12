@@ -131,6 +131,7 @@ const _getTrialRun = (state, props) => {
 }
 
 const makeGetTrialRun = () => createSelector(
+  /* this isn't working so great at the moment; error is called below */
   [ _getTrialRun ],
   (trialRun) => {
     console.error('really getting trial run')
