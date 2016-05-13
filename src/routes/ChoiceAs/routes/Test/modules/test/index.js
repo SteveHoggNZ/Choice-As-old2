@@ -107,31 +107,7 @@ const sagaErrorHandler = (error) => {
   }
 }
 
-const SAGA_UTIL = {
-  // buildTestJobs: (conditions, keys) => {
-  //   let actionJobs = []
-  //
-  //   for (let conditionID of Object.keys(conditions)) {
-  //     const condition = conditions[conditionID]
-  //     for (let i = 0; i < condition.keys.length; i++) {
-  //       let job = {}
-  //       for (let j = 0; j < condition.keys[i].length; j++) {
-  //         const keyID = condition.keys[i][j]
-  //         job = { ...job, [keyID]: keys[keyID].probability }
-  //       }
-  //       actionJobs = [
-  //         ...actionJobs,
-  //         {
-  //           name: `${condition.name}, set ${i + 1}`,
-  //           job
-  //         }
-  //       ]
-  //     }
-  //   }
-  //
-  //   return actionJobs
-  // }
-}
+const SAGA_UTIL = {}
 
 const SAGA_HANDLERS = {
   [constants.RUN_REQUEST]: {

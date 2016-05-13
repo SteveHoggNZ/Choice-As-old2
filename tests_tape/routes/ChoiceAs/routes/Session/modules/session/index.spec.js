@@ -34,7 +34,8 @@ test('should export constants', (a) => {
     'INIT',
     'STOP',
     'LOG',
-    'KEY_CLICK'
+    'KEY_CLICK',
+    'TRIAL_UPDATE'
   ]
   for (let name of required) {
     a.notEqual(constants[name], undefined, `constants.${name} exists`)
@@ -54,16 +55,6 @@ test('should export actions.creators', (a) => {
   a.equal(typeof actions.creators, 'object', 'is and object')
 })
 
-test('should export keyClick action', (a) => {
-  a.equal(typeof actions.creators.keyClick, 'function', 'is a function')
-
-  a.deepEqual(actions.creators.keyClick('1-1-1', 'L1'),
-    {type: constants.KEY_CLICK, payload: {sessionID: '1-1-1', keyID: 'L1'}},
-    'action defined correctly')
-
-  a.end()
-})
-
 test('should export start action', (a) => {
   a.equal(typeof actions.creators.start, 'function', 'is a function')
 
@@ -80,6 +71,32 @@ test('should export init action', (a) => {
   a.deepEqual(actions.creators.init('C2', 123),
     {type: constants.INIT, payload: {conditionID: 'C2', sessionID: 123}},
     'action defined correctly')
+
+  a.end()
+})
+
+test('should export keyClick action', (a) => {
+  a.equal(typeof actions.creators.keyClick, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.keyClick('1-1-1', 'L1'),
+    {type: constants.KEY_CLICK, payload: {sessionID: '1-1-1', keyID: 'L1'}},
+    'action defined correctly')
+
+  a.end()
+})
+
+test('should export trialUpdate action', (a) => {
+  a.equal(typeof actions.creators.trialUpdate, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.trialUpdate('1-1-1', 3, 5),
+    {
+      type: constants.TRIAL_UPDATE,
+      payload: {
+        sessionID: '1-1-1',
+        nextKeyStageID: 3,
+        nextTrialCount: 5
+      }
+    }, 'action defined correctly')
 
   a.end()
 })
@@ -124,10 +141,38 @@ test('should handle INIT', (a) => {
   a.ok(output.equals(Immutable.fromJS({
     '1-1-1': {
       conditionID: 'C2',
+      keyStageID: 0,
       trialCount: 0,
       log: []
     }
   })), 'inits the run state')
+})
+
+test('should handle TRIAL_UPDATE', (a) => {
+  a.plan(2)
+
+  a.equal(typeof actions.handlers[constants.TRIAL_UPDATE], 'function',
+    'handler function is defined')
+
+  const state = Immutable.fromJS({
+    '2-2-2': {
+      keyStageID: 1,
+      trialCount: 3
+    }
+  })
+  const action = {
+    payload: {
+      sessionID: '2-2-2', nextKeyStageID: 10, nextTrialCount: 22
+    }
+  }
+  const output = actions.handlers[constants.TRIAL_UPDATE](state, action)
+
+  a.ok(output.equals(Immutable.fromJS({
+    '2-2-2': {
+      keyStageID: 10,
+      trialCount: 22
+    }
+  })))
 })
 
 test('should handle LOG', (a) => {
@@ -264,6 +309,14 @@ test('should export a handler for KEY_CLICK', (a) => {
     'handler function exported')
   a.equal(typeof sagas.handlers[constants.KEY_CLICK].errorHandler, 'function',
     'errorHandler function exported')
+
+  const action = {payload: {sessionID: '1-1-1', keyID: 'C1'}}
+  const { handler } = sagas.handlers[constants.KEY_CLICK]
+  const instance = handler(action)
+
+  a.deepEqual(instance.next().value.PUT.action,
+    { payload: { msg: 'key click C1', sessionID: '1-1-1' }},
+      'put action call')
 
   a.end()
 })

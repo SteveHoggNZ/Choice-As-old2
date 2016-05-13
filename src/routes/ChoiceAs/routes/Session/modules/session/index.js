@@ -5,7 +5,10 @@ import { push as routerPush } from 'react-router-redux'
 import { call, put, select } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
 import sagaUtil from 'util/sagas'
-import { selectors as selectorsChoiceAs } from '../../../../modules/choiceas'
+import {
+  selectors as selectorsChoiceAs,
+  util as utilChoiceAs
+} from '../../../../modules/choiceas'
 
 /* constants */
 const STATE_PATH = 'session'
@@ -20,23 +23,15 @@ const INIT = `${PREFIX}INIT`
 const STOP = `${PREFIX}STOP`
 const LOG = `${PREFIX}LOG`
 const KEY_CLICK = `${PREFIX}KEY_CLICK`
+const TRIAL_UPDATE = `${PREFIX}TRIAL_UPDATE`
 
 export const constants = {
-  STATE_PATH, ROUTE_PATH, PREFIX, ERROR, START, INIT, STOP, LOG, KEY_CLICK
+  STATE_PATH, ROUTE_PATH, PREFIX, ERROR,
+  START, INIT, STOP, LOG, KEY_CLICK, TRIAL_UPDATE
 }
 
 /* actions */
 /* - action creators */
-const keyClick = (sessionID: string, keyID: string): Action => {
-  return {
-    type: constants.KEY_CLICK,
-    payload: {
-      sessionID,
-      keyID
-    }
-  }
-}
-
 const start = (conditionID: string): Action => {
   return {
     type: constants.START,
@@ -52,6 +47,35 @@ const init = (conditionID: string, sessionID: string): Action => {
     payload: {
       conditionID,
       sessionID
+    }
+  }
+}
+
+const keyClick = (sessionID: string, keyID: string): Action => {
+  return {
+    type: constants.KEY_CLICK,
+    payload: {
+      sessionID,
+      keyID
+    }
+  }
+}
+
+const trialUpdate = (
+  sessionID: string,
+  keyStageID: number, trialCount: number,
+  nextKeyStageID: number, nextTrialCount: number,
+  record: string
+): Action => {
+  return {
+    type: constants.TRIAL_UPDATE,
+    payload: {
+      sessionID,
+      keyStageID,
+      trialCount,
+      nextKeyStageID,
+      nextTrialCount,
+      record
     }
   }
 }
@@ -77,7 +101,8 @@ const ACTION_CREATORS = {
   init,
   stop,
   log,
-  keyClick
+  keyClick,
+  trialUpdate
 }
 
 /* - action handlers */
@@ -86,11 +111,31 @@ const ACTION_HANDLERS = {
     return state.set(action.payload.sessionID,
       Immutable.fromJS({
         conditionID: action.payload.conditionID,
-        // runOrder: action.payload.runOrder,
-        // cursor: [action.payload.runOrder[0], 0],
+        keyStageID: 0,
         trialCount: 0,
+        trials: [],
         log: []
       }))
+  },
+  [constants.TRIAL_UPDATE]: (state: object, action: {payload: object}): object => {
+    const {
+      sessionID,
+      keyStageID,
+      trialCount,
+      nextKeyStageID,
+      nextTrialCount,
+      record
+    } = action.payload
+    return state.withMutations((s) => {
+      s.setIn([sessionID, 'keyStageID'], nextKeyStageID)
+        .setIn([sessionID, 'trialCount'], nextTrialCount)
+
+      s.updateIn([sessionID, 'trials', trialCount], (trial) => {
+        return trial ? trial.push(record) : Immutable.fromJS([record])
+      })
+
+      return s
+    })
   },
   [constants.LOG]: (state: object, action: {payload: object}): object => {
     return state.updateIn([action.payload.sessionID, 'log'], (val) =>
@@ -177,6 +222,80 @@ const SAGA_UTIL = {
 }
 
 const SAGA_HANDLERS = {
+  [constants.KEY_CLICK]: {
+    require: {payload: {sessionID: '', keyID: ''}},
+    handler: function * (action) {
+      const {sessionID, keyID} = action.payload
+
+      // *** TODO, cache this result somewhere?
+      const getSession = selectors.makeGetSession()
+
+      const session = yield select(getSession, {sessionID})
+
+      yield put(actions.creators
+        .log(sessionID, '-----------------------------------------------'))
+
+      yield put(actions.creators
+        .log(sessionID, `Key click ${keyID}`))
+
+      const { conditions, keys } =
+        yield select(selectorsChoiceAs.getConditionsAndKeys)
+
+      const condition = conditions[session.conditionID]
+
+      const { keyStageID, trialCount } = session
+
+      const keyStage = condition.keys[session.keyStageID]
+
+      const keyStageFull = keyStage
+        .reduce((acc, key) => ({
+          ...acc,
+          [key]: keys[key].probability
+        }), {})
+
+      yield put(actions.creators
+        .log(sessionID, `Trial: ${trialCount + 1},
+          Stage: ${keyStageID + 1}, Possible Keys: ${keyStage.join(', ')}`))
+
+      /* reinforcer can be L* R* STAY_* or SWITCH_* */
+      const reinforcer = utilChoiceAs.weightedRandomSelect(keyStageFull)
+
+      /* loop nextStageID around to 0 if we go past the end of the array */
+      const nextKeyStageID = (keyStageID + 1) % condition.keys.length
+      let nextTrialCount = nextKeyStageID === 0
+        ? trialCount + 1 : trialCount
+
+      let previousKey = 'none'
+      /* reinforcerKey will be L* or R* */
+      let reinforcerKey
+      if (reinforcer.startsWith('STAY_')) {
+        /* previousKey from the same trial but the previous stage */
+        previousKey = session.trials[trialCount][keyStageID - 1].reinforcerKey
+        reinforcerKey = previousKey
+      } else if (reinforcer.startsWith('SWITCH_')) {
+        /* previousKey from the same trial but the previous stage */
+        previousKey = session.trials[trialCount][keyStageID - 1].reinforcerKey
+        // get the first of the previous stage's keys that doesn't match
+        // the previous key
+        reinforcerKey = condition.keys[session.keyStageID - 1]
+          .filter((id) => id !== previousKey)[0]
+      } else {
+        reinforcerKey = reinforcer
+      }
+
+      yield put(actions.creators.log(sessionID,
+        `Reinforcer Location: ${reinforcerKey}
+          ${reinforcer !== reinforcerKey ? ' (' + reinforcer + ')' : ''}`))
+
+      const record = {reinforcer, reinforcerKey, previousKey}
+
+      yield put(actions.creators.trialUpdate(
+        sessionID,
+        keyStage, trialCount,
+        nextKeyStageID, nextTrialCount, record))
+    },
+    errorHandler: sagaErrorHandler
+  },
   [constants.START]: {
     handler: function * (action) {
       const { conditionID } = action.payload
@@ -187,20 +306,19 @@ const SAGA_HANDLERS = {
 
       yield put(yield call(actions.creators.init, conditionID, sessionID))
 
-      yield put(actions.creators.log(sessionID, `initalised new session ${sessionID}`))
+      yield put(actions.creators.log(sessionID,
+        `Initalised Condition ${conditionID}, Session ${sessionID}`))
+
+      /* flatmap array of arrays then convert into a string */
+      const keyString = conditions[conditionID].keys
+        .reduce((acc, v) =>
+          [...acc, ...v.reduce((acc2, v2) => [...acc2, v2], [])], [])
+            .join(', ')
+
+      yield put(actions.creators.log(sessionID, `Condition key sequence: ${keyString}`))
 
       /* absolute path required to stop not-found route */
       yield put(yield call(routerPush, `/choiceas/${ROUTE_PATH}/${sessionID}`))
-
-      console.log('sessionID', sessionID, conditions)
-    },
-    errorHandler: sagaErrorHandler
-  },
-  [constants.KEY_CLICK]: {
-    require: {payload: {sessionID: '', keyID: ''}},
-    handler: function * (action) {
-      const {sessionID, keyID} = action.payload
-      yield put(actions.creators.log(sessionID, `key click ${keyID}`))
     },
     errorHandler: sagaErrorHandler
   }

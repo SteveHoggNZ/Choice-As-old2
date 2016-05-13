@@ -28,7 +28,7 @@ export const ChoiceAsSession = (props: Props) => {
     if (props.session && props.session.log) {
       let i = 0
       return props.session.log
-        .map((v) => <li key={i++}>{v}</li>)
+        .map((v) => <li key={i++}>{props.session.log.length + 1 - i} {v}</li>)
     }
   }
 
