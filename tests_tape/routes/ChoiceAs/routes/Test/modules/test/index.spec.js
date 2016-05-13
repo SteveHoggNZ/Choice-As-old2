@@ -1,4 +1,5 @@
 import { h, hh, hhh, t, tt } from '../../../../../../test_util'
+import test from 'blue-tape'
 import Immutable from 'immutable'
 import { call, select } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
@@ -28,7 +29,7 @@ h('(Redux Module) ChoiceAs/Test')
 /* constants */
 hh('(Constants)')
 
-t('should export constants', (a) => {
+test('should export constants', (a) => {
   a.notEqual(constants.STATE_PATH, undefined, 'STATE_PATH is defined')
   a.notEqual(constants.PREFIX, undefined, 'PREFIX is defined')
 
@@ -51,12 +52,12 @@ hh('(Actions)')
 /* action creators */
 hhh('(Action Creators)')
 
-tt('should export actions.creators', (a) => {
+test('should export actions.creators', (a) => {
   a.plan(1)
   a.equal(typeof actions.creators, 'object', 'is and object')
 })
 
-tt('should export runRequest action', (a) => {
+test('should export runRequest action', (a) => {
   a.equal(typeof actions.creators.runRequest, 'function', 'is a function')
 
   a.deepEqual(actions.creators.runRequest(345),
@@ -66,7 +67,7 @@ tt('should export runRequest action', (a) => {
   a.end()
 })
 
-tt('should export runStart action', (a) => {
+test('should export runStart action', (a) => {
   a.equal(typeof actions.creators.runStart, 'function', 'is a function')
 
   a.deepEqual(actions.creators.runStart(),
@@ -76,7 +77,7 @@ tt('should export runStart action', (a) => {
   a.end()
 })
 
-tt('should export runReturn action', (a) => {
+test('should export runReturn action', (a) => {
   a.equal(typeof actions.creators.runReturn, 'function', 'is a function')
 
   a.deepEqual(actions.creators.runReturn({iterations: 10, jobs: 123}),
@@ -89,12 +90,25 @@ tt('should export runReturn action', (a) => {
 /* action handlers */
 hhh('(Action Handlers)')
 
-tt('should export actions.handlers', (a) => {
+test('should export actions.handlers', (a) => {
   a.plan(1)
   a.equal(typeof actions.handlers, 'object', 'is and object')
 })
 
-tt('should handle RUN_START', (a) => {
+test('should handle RUN_REQUEST', (a) => {
+  a.plan(2)
+  a.equal(typeof actions.handlers[constants.RUN_REQUEST], 'function',
+    'handler function is defined')
+
+  const state = Immutable.fromJS({iterations: 123})
+  const action = {payload: 456}
+  const output = actions.handlers[constants.RUN_REQUEST](state, action)
+
+  a.ok(output.equals(Immutable.fromJS({iterations: 456})),
+    'sets iterations to payload')
+})
+
+test('should handle RUN_START', (a) => {
   a.plan(2)
   a.equal(typeof actions.handlers[constants.RUN_START], 'function',
     'handler function is defined')
@@ -106,35 +120,35 @@ tt('should handle RUN_START', (a) => {
     'sets running to true')
 })
 
-tt('should handle RUN_RETURN', (a) => {
+test('should handle RUN_RETURN', (a) => {
   a.plan(2)
   a.equal(typeof actions.handlers[constants.RUN_RETURN], 'function',
     'handler function is defined')
 
-  const state = Immutable.fromJS({running: true, iterations: 1001, jobs: 123})
-  const action = {payload: {jobs: 456}}
+  const state = Immutable.fromJS({running: true, iterations: 1001, counts: 123})
+  const action = {payload: 456}
   const output = actions.handlers[constants.RUN_RETURN](state, action)
 
   a.ok(output.equals(
-    Immutable.fromJS({running: false, iterations: 1001, jobs: 456})),
-    'sets running and results')
+    Immutable.fromJS({running: false, iterations: 1001, counts: 456})),
+    'sets running and counts')
 })
 
 /* reducer */
 hh('(Reducer)')
 
-t('should export a reducer', (a) => {
+test('should export a reducer', (a) => {
   a.plan(1)
   a.equal(typeof reducer, 'function', 'is a function')
 })
 
-t('should export initialState', (a) => {
+test('should export initialState', (a) => {
   a.plan(1)
   a.ok(Immutable.Iterable.isIterable(initialState),
     'initialState is an Immutable.js Iterable')
 })
 
-t('should run the handler on the state', (a) => {
+test('should run the handler on the state', (a) => {
   const startState = Immutable.fromJS({
     count: 0
   })
@@ -155,12 +169,12 @@ t('should run the handler on the state', (a) => {
 /* selectors */
 hh('(Selectors)')
 
-t('should export selectors', (a) => {
+test('should export selectors', (a) => {
   a.plan(1)
   a.equal(typeof selectors, 'object', 'is an object')
 })
 
-t('should export getTestResults', (a) => {
+test('should export getTestResults', (a) => {
   a.plan(2)
   a.equal(typeof selectors.getTestResults, 'function', 'is an function')
 
@@ -174,38 +188,27 @@ t('should export getTestResults', (a) => {
 /* sagas */
 hh('(Sagas)')
 
-t('should export a sagaMain', (a) => {
+test('should export a sagaMain', (a) => {
   a.plan(1)
   a.equal(typeof sagas.sagaMain, 'function', 'is a function')
 })
 
-t('should export util', (a) => {
+test('should export util', (a) => {
   a.plan(1)
   a.equal(typeof sagas.util, 'object', 'is an object')
 })
 
-t('should export util buildTestJobs', (a) => {
-  a.plan(2)
-  a.equal(typeof sagas.util.buildTestJobs, 'function', 'is an function')
-
-  const {conditions, keys} = fixtures.conditionsExample
-  const jobs = fixtures.jobsExample
-
-  a.deepEqual(
-    sagas.util.buildTestJobs(conditions, keys), jobs, 'denormalised jobs')
-})
-
-t('should export a errorHandler', (a) => {
+test('should export a errorHandler', (a) => {
   a.plan(1)
   a.equal(typeof sagas.errorHandler, 'function', 'is a function')
 })
 
-t('should export handlers', (a) => {
+test('should export handlers', (a) => {
   a.plan(1)
   a.equal(typeof sagas.handlers, 'object', 'is an object')
 })
 
-t('should export a handler for RUN_REQUEST', (a) => {
+test('should export a handler for RUN_REQUEST', (a) => {
   a.equal(typeof sagas.handlers[constants.RUN_REQUEST], 'object',
     'handler object exported')
   a.equal(typeof sagas.handlers[constants.RUN_REQUEST].handler, 'function',
@@ -231,13 +234,7 @@ t('should export a handler for RUN_REQUEST', (a) => {
   const { conditions, keys } = fixtures.conditionsExample
 
   a.deepEqual(
-    instance.next({conditions, keys}).value,
-    call(sagas.util.buildTestJobs, conditions, keys),
-      'calls sagas.util.buildTestJobs function'
-  )
-
-  a.deepEqual(
-    instance.next(fixtures.jobsExample).value.CALL.fn,
+    instance.next({conditions, keys}).value.CALL.fn,
     actions.creators.runReturn,
     'call to actions.creators.runReturn (args not checked)')
 

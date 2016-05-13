@@ -1,9 +1,23 @@
 export default {
   conditions: {
-    C1: { name: 'condition 1', runs: 1, keys: [ ['L5', 'R5'], ['L5', 'R5'] ] },
-    C2: { name: 'condition 2', runs: 1, keys: [ ['L5', 'R5'], ['L9', 'R1'] ] },
-    C3: { name: 'condition 3', runs: 1, keys: [ ['L5', 'R5'], ['L1', 'R9'] ] }
-
+    C1: { name: 'condition 1', trials: 10,
+      keys: [
+        ['L5', 'R5'],
+        ['STAY_0.1', 'SWITCH_0.9']
+      ]
+    },
+    C2: { name: 'condition 2', trials: 10,
+      keys: [
+        ['L5', 'R5'],
+        ['L5', 'R5']
+      ]
+    },
+    C3: { name: 'condition 3', trials: 10,
+      keys: [
+        ['L5', 'R5'],
+        ['STAY_0.9', 'SWITCH_0.1']
+      ]
+    }
     /*
     C4: {
       name: 'condition 4', trials: 10, iti: 15,

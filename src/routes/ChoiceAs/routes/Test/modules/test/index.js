@@ -38,10 +38,10 @@ const runStart = () => {
   }
 }
 
-const runReturn = (result: object): Action => {
+const runReturn = (counts: object): Action => {
   return {
     type: constants.RUN_RETURN,
-    payload: result
+    payload: counts
   }
 }
 
@@ -53,12 +53,14 @@ const ACTION_CREATORS = {
 
 /* - action handlers */
 const ACTION_HANDLERS = {
+  [constants.RUN_REQUEST]: (state: object, action: {payload: object}): object =>
+    state.set('iterations', action.payload),
   [constants.RUN_START]: (state: object, action: {payload: object}): object =>
     state.set('running', true),
   [constants.RUN_RETURN]: (state: object, action: {payload: object}): object =>
     state.withMutations(
       (s) => s.set('running', false)
-        .set('jobs', action.payload.jobs))
+        .set('counts', Immutable.fromJS(action.payload)))
 }
 
 export const actions = {
@@ -70,8 +72,8 @@ export const actions = {
 export const initialState = Immutable.fromJS({
   running: false,
   lastrun: undefined,
-  iterations: 1000000,
-  jobs: []
+  iterations: 100,
+  counts: {}
 })
 export const reducer = (
   state : number = initialState,
@@ -106,29 +108,29 @@ const sagaErrorHandler = (error) => {
 }
 
 const SAGA_UTIL = {
-  buildTestJobs: (conditions, keys) => {
-    let actionJobs = []
-
-    for (let conditionID of Object.keys(conditions)) {
-      const condition = conditions[conditionID]
-      for (let i = 0; i < condition.keys.length; i++) {
-        let job = {}
-        for (let j = 0; j < condition.keys[i].length; j++) {
-          const keyID = condition.keys[i][j]
-          job = { ...job, [keyID]: keys[keyID].probability }
-        }
-        actionJobs = [
-          ...actionJobs,
-          {
-            name: `${condition.name}, set ${i + 1}`,
-            job
-          }
-        ]
-      }
-    }
-
-    return actionJobs
-  }
+  // buildTestJobs: (conditions, keys) => {
+  //   let actionJobs = []
+  //
+  //   for (let conditionID of Object.keys(conditions)) {
+  //     const condition = conditions[conditionID]
+  //     for (let i = 0; i < condition.keys.length; i++) {
+  //       let job = {}
+  //       for (let j = 0; j < condition.keys[i].length; j++) {
+  //         const keyID = condition.keys[i][j]
+  //         job = { ...job, [keyID]: keys[keyID].probability }
+  //       }
+  //       actionJobs = [
+  //         ...actionJobs,
+  //         {
+  //           name: `${condition.name}, set ${i + 1}`,
+  //           job
+  //         }
+  //       ]
+  //     }
+  //   }
+  //
+  //   return actionJobs
+  // }
 }
 
 const SAGA_HANDLERS = {
@@ -146,36 +148,46 @@ const SAGA_HANDLERS = {
       const { conditions, keys } =
         yield select(selectorsChoiceAs.getConditionsAndKeys)
 
-      const actionJobs = yield call(SAGA_UTIL.buildTestJobs, conditions, keys)
-
       const iterations = action.payload || 1000
 
-      let results = {
-        iterations,
-        jobs: []
-      }
-      for (let {job, name} of actionJobs) {
-        // an object to record counts with each job key initialised to 0
-        let testCounts = Object.keys(job)
-          .reduce((acc, key) => {
-            return {
-              ...acc,
-              [key]: 0
-            }
-          }, {})
+      /* create an object that has a counter for each key stage and key */
+      let testCounts = Object.keys(conditions)
+        .reduce((acc, conditionID) => {
+          return {
+            ...acc,
+            [conditionID]: conditions[conditionID].keys
+              .map((stages) => stages.reduce((acc, keyID) => (
+                { ...acc, [keyID]: 0 }
+              ), {}))
+          }
+        }, {})
+
+      for (let conditionID of Object.keys(conditions)) {
+        const condition = conditions[conditionID]
+
+        /* stages, successive sets of keys, are limited to 2 */
+        let [ keyStage1, keyStage2 ] = condition.keys
 
         for (let i = 0; i < iterations; i++) {
-          // increment the counter for the key that is returned
-          testCounts[utilChoiceAs.weightedRandomSelect(job)]++
-        }
+          const job1 = keyStage1.reduce((acc, keyID) => ({
+            ...acc,
+            [keyID]: keys[keyID].probability
+          }), {})
 
-        results.jobs = [
-          ...results.jobs,
-          {name, result: testCounts}
-        ]
+          const result1 = utilChoiceAs.weightedRandomSelect(job1)
+          testCounts[conditionID][0][result1]++
+
+          const job2 = keyStage2.reduce((acc, keyID) => ({
+            ...acc,
+            [keyID]: keys[keyID].probability
+          }), {})
+
+          const result2 = utilChoiceAs.weightedRandomSelect(job2)
+          testCounts[conditionID][1][result2]++
+        }
       }
 
-      yield put(yield call(actions.creators.runReturn, results))
+      yield put(yield call(actions.creators.runReturn, testCounts))
     },
     errorHandler: sagaErrorHandler
   }
