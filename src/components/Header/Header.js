@@ -13,8 +13,8 @@ export const Header = () => (
       Choice As
     </IndexLink>
     {' · '}
-    <Link to='/choiceas/trial' activeClassName={classes.activeRoute}>
-      Choice As Trial
+    <Link to='/choiceas/session' activeClassName={classes.activeRoute}>
+      Choice As Session
     </Link>
     {' · '}
     <Link to='/choiceas/test' activeClassName={classes.activeRoute}>

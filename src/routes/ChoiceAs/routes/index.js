@@ -1,9 +1,9 @@
-import TrialRoute from './Trial'
+import SessionRoute from './Session'
 import TestRoute from './Test'
 
 /* export child routes */
 export default (store) => [
   { path: 'debug' },
-  TrialRoute(store),
+  SessionRoute(store),
   TestRoute(store)
 ]

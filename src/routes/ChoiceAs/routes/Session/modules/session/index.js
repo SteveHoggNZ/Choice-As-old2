@@ -8,10 +8,10 @@ import sagaUtil from 'util/sagas'
 import { selectors as selectorsChoiceAs } from '../../../../modules/choiceas'
 
 /* constants */
-const STATE_PATH = 'trial'
+const STATE_PATH = 'session'
 const ROUTE_PATH = STATE_PATH
 
-const PREFIX = 'choiceas/trial/'
+const PREFIX = 'choiceas/session/'
 
 const ERROR = `${PREFIX}ERROR`
 
@@ -27,28 +27,31 @@ export const constants = {
 
 /* actions */
 /* - action creators */
-const keyClick = (runID: string, keyID: string): Action => {
+const keyClick = (sessionID: string, keyID: string): Action => {
   return {
     type: constants.KEY_CLICK,
     payload: {
-      runID,
+      sessionID,
       keyID
     }
   }
 }
 
-const start = (): Action => {
+const start = (conditionID: string): Action => {
   return {
-    type: constants.START
+    type: constants.START,
+    payload: {
+      conditionID
+    }
   }
 }
 
-const init = ({runID, runOrder}): Action => {
+const init = (conditionID: string, sessionID: string): Action => {
   return {
     type: constants.INIT,
     payload: {
-      runID,
-      runOrder
+      conditionID,
+      sessionID
     }
   }
 }
@@ -59,11 +62,11 @@ const stop = (): Action => {
   }
 }
 
-const log = (runID: string, msg: string): Action => {
+const log = (sessionID: string, msg: string): Action => {
   return {
     type: constants.LOG,
     payload: {
-      runID,
+      sessionID,
       msg
     }
   }
@@ -80,18 +83,18 @@ const ACTION_CREATORS = {
 /* - action handlers */
 const ACTION_HANDLERS = {
   [constants.INIT]: (state: object, action: {payload: object}): object => {
-    return state.setIn(['run', action.payload.runID],
+    return state.set(action.payload.sessionID,
       Immutable.fromJS({
-        runOrder: action.payload.runOrder,
-        cursor: [action.payload.runOrder[0], 0],
-        count: 0,
+        conditionID: action.payload.conditionID,
+        // runOrder: action.payload.runOrder,
+        // cursor: [action.payload.runOrder[0], 0],
+        trialCount: 0,
         log: []
       }))
   },
   [constants.LOG]: (state: object, action: {payload: object}): object => {
-    return state.updateIn(['run', action.payload.runID, 'log'], (val) =>
-      val.unshift(action.payload.msg))
-      /* unshift = newest to the top of the list*/
+    return state.updateIn([action.payload.sessionID, 'log'], (val) =>
+      val.unshift(action.payload.msg)) /* unshift, newest item to the top */
   }
 }
 
@@ -101,9 +104,7 @@ export const actions = {
 }
 
 /* reducer */
-export const initialState = Immutable.fromJS({
-  run: {}
-})
+export const initialState = Immutable.fromJS({})
 export const reducer = (
   state : number = initialState,
   action : Action,
@@ -115,34 +116,34 @@ export const reducer = (
 }
 
 /* selectors */
-const _getTrialState = (state, props) => {
+const _getSessionState = (state, props) => {
   console.warn('got props in selector', props)
   return state.getIn([constants.STATE_PATH])
 }
 
-const getTrialState = createSelector(
-  _getTrialState,
+const getSessionState = createSelector(
+  _getSessionState,
   (_result) => _result.toJS()
 )
 
-const _getTrialRun = (state, props) => {
-  console.warn('getting trial run')
-  return state.getIn([constants.STATE_PATH, 'run', props.runID]) || undefined
+const _getSession = (state, props) => {
+  console.warn('getting session')
+  return state.getIn([constants.STATE_PATH, props.sessionID]) || undefined
 }
 
-const makeGetTrialRun = () => createSelector(
+const makeGetSession = () => createSelector(
   /* this isn't working so great at the moment; error is called below */
-  [ _getTrialRun ],
-  (trialRun) => {
-    console.error('really getting trial run')
-    return trialRun && trialRun.toJS()
+  [ _getSession ],
+  (session) => {
+    console.error('really getting session')
+    return session && session.toJS()
   }
 )
 
 export const selectors = {
-  // *** TODO, remove getTrialState
-  getTrialState,
-  makeGetTrialRun
+  // *** TODO, remove getSessionState
+  getSessionState,
+  makeGetSession
 }
 
 /* sagas */
@@ -178,33 +179,28 @@ const SAGA_UTIL = {
 const SAGA_HANDLERS = {
   [constants.START]: {
     handler: function * (action) {
-      const runID = yield call(uuid)
+      const { conditionID } = action.payload
+      const sessionID = yield call(uuid)
 
       const { conditions, keys } =
         yield select(selectorsChoiceAs.getConditionsAndKeys)
 
-      const runOrder =
-        yield call(SAGA_UTIL.arrayShuffle, Object.keys(conditions))
+      yield put(yield call(actions.creators.init, conditionID, sessionID))
 
-      yield put(yield call(actions.creators.init, {runID, runOrder}))
-
-      yield put(actions.creators.log(runID, `initalised new run ${runID}`))
-      yield put(actions.creators.log(runID,
-        `run order randomised to ${runOrder.join(', ')}`))
-      yield put(actions.creators.log(runID, `starting ${runOrder[0]}, set 1`))
+      yield put(actions.creators.log(sessionID, `initalised new session ${sessionID}`))
 
       /* absolute path required to stop not-found route */
-      yield put(yield call(routerPush, `/choiceas/${ROUTE_PATH}/${runID}`))
+      yield put(yield call(routerPush, `/choiceas/${ROUTE_PATH}/${sessionID}`))
 
-      console.log('runID', runID, conditions, runOrder)
+      console.log('sessionID', sessionID, conditions)
     },
     errorHandler: sagaErrorHandler
   },
   [constants.KEY_CLICK]: {
-    require: {payload: {runID: '', keyID: ''}},
+    require: {payload: {sessionID: '', keyID: ''}},
     handler: function * (action) {
-      const {runID, keyID} = action.payload
-      yield put(actions.creators.log(runID, `key click ${keyID}`))
+      const {sessionID, keyID} = action.payload
+      yield put(actions.creators.log(sessionID, `key click ${keyID}`))
     },
     errorHandler: sagaErrorHandler
   }

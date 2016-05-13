@@ -9,7 +9,7 @@ type Props = {
 
 export const ChoiceKey = (props: Props) => {
   const keyClickHandler = () => {
-    props.keyClick(props.runID, props.id)
+    props.keyClick(props.sessionID, props.id)
   }
 
   return <div className={classes.choiceKey}
@@ -18,12 +18,8 @@ export const ChoiceKey = (props: Props) => {
 
 ChoiceKey.propTypes = {
   id: React.PropTypes.string.isRequired,
-  runID: React.PropTypes.string.isRequired,
+  sessionID: React.PropTypes.string.isRequired,
   keyClick: React.PropTypes.func.isRequired
-  // isChoice: React.PropTypes.boolean.isRequired
-  // counter: React.PropTypes.number.isRequired,
-  // doubleAsync: React.PropTypes.func.isRequired,
-  // increment: React.PropTypes.func.isRequired
 }
 
 export default ChoiceKey

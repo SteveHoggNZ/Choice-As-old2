@@ -1,4 +1,5 @@
-import { h, hh, hhh, t, tt } from '../../../../../../test_util'
+import { h, hh, hhh, t } from '../../../../../../test_util'
+import test from 'blue-tape'
 import Immutable from 'immutable'
 import uuid from 'uuid-v4'
 import { push as routerPush } from 'react-router-redux'
@@ -6,7 +7,7 @@ import { call, select } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
 import config from 'config'
 import { constants, actions, selectors, sagas, initialState, reducer }
-  from 'routes/ChoiceAs/routes/Trial/modules/trial'
+  from 'routes/ChoiceAs/routes/Session/modules/session'
 import { selectors as selectorsChoiceAs }
   from 'routes/ChoiceAs/modules/choiceas'
 
@@ -17,12 +18,12 @@ const fixtures = {
   }
 }
 
-h('(Redux Module) ChoiceAs/Trial')
+h('(Redux Module) ChoiceAs/Session')
 
 /* constants */
 hh('(Constants)')
 
-t('should export constants', (a) => {
+test('should export constants', (a) => {
   a.notEqual(constants.STATE_PATH, undefined, 'STATE_PATH is defined')
   a.notEqual(constants.ROUTE_PATH, undefined, 'ROUTE_PATH is defined')
   a.notEqual(constants.PREFIX, undefined, 'PREFIX is defined')
@@ -48,42 +49,42 @@ hh('(Actions)')
 /* action creators */
 hhh('(Action Creators)')
 
-tt('should export actions.creators', (a) => {
+test('should export actions.creators', (a) => {
   a.plan(1)
   a.equal(typeof actions.creators, 'object', 'is and object')
 })
 
-tt('should export keyClick action', (a) => {
+test('should export keyClick action', (a) => {
   a.equal(typeof actions.creators.keyClick, 'function', 'is a function')
 
   a.deepEqual(actions.creators.keyClick('1-1-1', 'L1'),
-    {type: constants.KEY_CLICK, payload: {runID: '1-1-1', keyID: 'L1'}},
+    {type: constants.KEY_CLICK, payload: {sessionID: '1-1-1', keyID: 'L1'}},
     'action defined correctly')
 
   a.end()
 })
 
-tt('should export start action', (a) => {
+test('should export start action', (a) => {
   a.equal(typeof actions.creators.start, 'function', 'is a function')
 
-  a.deepEqual(actions.creators.start(),
-    {type: constants.START},
+  a.deepEqual(actions.creators.start('C2'),
+    {type: constants.START, payload: { conditionID: 'C2' } },
     'action defined correctly')
 
   a.end()
 })
 
-tt('should export init action', (a) => {
+test('should export init action', (a) => {
   a.equal(typeof actions.creators.init, 'function', 'is a function')
 
-  a.deepEqual(actions.creators.init({runID: 123, runOrder: ['C2', 'C1']}),
-    {type: constants.INIT, payload: {runID: 123, runOrder: ['C2', 'C1']}},
+  a.deepEqual(actions.creators.init('C2', 123),
+    {type: constants.INIT, payload: {conditionID: 'C2', sessionID: 123}},
     'action defined correctly')
 
   a.end()
 })
 
-tt('should export stop action', (a) => {
+test('should export stop action', (a) => {
   a.equal(typeof actions.creators.stop, 'function', 'is a function')
 
   a.deepEqual(actions.creators.stop(),
@@ -93,11 +94,11 @@ tt('should export stop action', (a) => {
   a.end()
 })
 
-tt('should export log action', (a) => {
+test('should export log action', (a) => {
   a.equal(typeof actions.creators.log, 'function', 'is a function')
 
   a.deepEqual(actions.creators.log('2-2-2', 'test message'),
-    {type: constants.LOG, payload: {runID: '2-2-2', msg: 'test message'}},
+    {type: constants.LOG, payload: {sessionID: '2-2-2', msg: 'test message'}},
     'action defined correctly')
 
   a.end()
@@ -106,52 +107,45 @@ tt('should export log action', (a) => {
 /* action handlers */
 hhh('(Action Handlers)')
 
-tt('should export actions.handlers', (a) => {
+test('should export actions.handlers', (a) => {
   a.plan(1)
   a.equal(typeof actions.handlers, 'object', 'is and object')
 })
 
-tt('should handle INIT', (a) => {
+test('should handle INIT', (a) => {
   a.plan(2)
   a.equal(typeof actions.handlers[constants.INIT], 'function',
     'handler function is defined')
 
-  const state = Immutable.fromJS({run: {}})
-  const action = {payload: {runID: '1-1-1', runOrder: ['C2', 'C1']}}
+  const state = Immutable.fromJS({})
+  const action = {payload: {conditionID: 'C2', sessionID: '1-1-1'}}
   const output = actions.handlers[constants.INIT](state, action)
 
   a.ok(output.equals(Immutable.fromJS({
-    run: {
-      '1-1-1': {
-        runOrder: ['C2', 'C1'],
-        cursor: ['C2', 0],
-        count: 0,
-        log: []
-      }
+    '1-1-1': {
+      conditionID: 'C2',
+      trialCount: 0,
+      log: []
     }
   })), 'inits the run state')
 })
 
-tt('should handle LOG', (a) => {
+test('should handle LOG', (a) => {
   a.plan(2)
   a.equal(typeof actions.handlers[constants.LOG], 'function',
     'handler function is defined')
 
   const state = Immutable.fromJS({
-    run: {
-      '2-2-2': {
-        log: ['one']
-      }
+    '2-2-2': {
+      log: ['one']
     }
   })
-  const action = {payload: {runID: '2-2-2', msg: 'two'}}
+  const action = {payload: {sessionID: '2-2-2', msg: 'two'}}
   const output = actions.handlers[constants.LOG](state, action)
 
   a.ok(output.equals(Immutable.fromJS({
-    run: {
-      '2-2-2': {
-        log: ['two', 'one']
-      }
+    '2-2-2': {
+      log: ['two', 'one']
     }
   })), 'logs the msg')
 })
@@ -159,18 +153,18 @@ tt('should handle LOG', (a) => {
 /* reducer */
 hh('(Reducer)')
 
-t('should export a reducer', (a) => {
+test('should export a reducer', (a) => {
   a.plan(1)
   a.equal(typeof reducer, 'function', 'is a function')
 })
 
-t('should export initialState', (a) => {
+test('should export initialState', (a) => {
   a.plan(1)
   a.ok(Immutable.Iterable.isIterable(initialState),
     'initialState is an Immutable.js Iterable')
 })
 
-t('should run the handler on the state', (a) => {
+test('should run the handler on the state', (a) => {
   const startState = Immutable.fromJS({
     count: 0
   })
@@ -191,57 +185,55 @@ t('should run the handler on the state', (a) => {
 /* selectors */
 hh('(Selectors)')
 
-t('should export selectors', (a) => {
+test('should export selectors', (a) => {
   a.plan(1)
   a.equal(typeof selectors, 'object', 'is an object')
 })
 
-t('should export getTrialState', (a) => {
+test('should export getSessionState', (a) => {
   a.plan(2)
-  a.equal(typeof selectors.getTrialState, 'function', 'is an function')
+  a.equal(typeof selectors.getSessionState, 'function', 'is an function')
 
   const startState = Immutable.fromJS({ [constants.STATE_PATH]: initialState })
 
-  a.deepEqual(selectors.getTrialState(startState),
+  a.deepEqual(selectors.getSessionState(startState),
     startState.get(constants.STATE_PATH).toJS(),
     'gets test data from the initialState')
 })
 
-t('should export makeGetTrialRun', (a) => {
+test('should export makeGetSession', (a) => {
   a.plan(3)
-  a.equal(typeof selectors.makeGetTrialRun, 'function', 'make is an function')
+  a.equal(typeof selectors.makeGetSession, 'function', 'make is an function')
 
-  const getTrialRun = selectors.makeGetTrialRun()
+  const getSession = selectors.makeGetSession()
 
-  a.equal(typeof getTrialRun, 'function', 'get is a function')
+  a.equal(typeof getSession, 'function', 'get is a function')
 
   const startState = Immutable.fromJS({
     [constants.STATE_PATH]: {
-      run: {
-        '1-1-1': { test: true },
-        '2-2-2': { test: 'yes' }
-      }
+      '1-1-1': { test: true },
+      '2-2-2': { test: 'yes' }
     }
   })
 
-  a.deepEqual(getTrialRun(startState, {runID: '2-2-2'}), { test: 'yes' },
+  a.deepEqual(getSession(startState, {sessionID: '2-2-2'}), { test: 'yes' },
     'returns trial run')
 })
 
 /* sagas */
 hh('(Sagas)')
 
-t('should export a sagaMain', (a) => {
+test('should export a sagaMain', (a) => {
   a.plan(1)
   a.equal(typeof sagas.sagaMain, 'function', 'is a function')
 })
 
-t('should export util', (a) => {
+test('should export util', (a) => {
   a.plan(1)
   a.equal(typeof sagas.util, 'object', 'is an object')
 })
 
-t('should export util arrayShuffle', (a) => {
+test('should export util arrayShuffle', (a) => {
   a.plan(2)
   a.equal(typeof sagas.util.arrayShuffle, 'function', 'is an function')
 
@@ -255,17 +247,17 @@ t('should export util arrayShuffle', (a) => {
   a.ok(!(res1 === res2 === res3 === res4 === res5), 'arrays are not equal')
 })
 
-t('should export a errorHandler', (a) => {
+test('should export a errorHandler', (a) => {
   a.plan(1)
   a.equal(typeof sagas.errorHandler, 'function', 'is a function')
 })
 
-t('should export handlers', (a) => {
+test('should export handlers', (a) => {
   a.plan(1)
   a.equal(typeof sagas.handlers, 'object', 'is an object')
 })
 
-t('should export a handler for KEY_CLICK', (a) => {
+test('should export a handler for KEY_CLICK', (a) => {
   a.equal(typeof sagas.handlers[constants.KEY_CLICK], 'object',
     'handler object exported')
   a.equal(typeof sagas.handlers[constants.KEY_CLICK].handler, 'function',
@@ -276,7 +268,7 @@ t('should export a handler for KEY_CLICK', (a) => {
   a.end()
 })
 
-t('should export a handler for START', (a) => {
+test('should export a handler for START', (a) => {
   a.equal(typeof sagas.handlers[constants.START], 'object',
     'handler object exported')
   a.equal(typeof sagas.handlers[constants.START].handler, 'function',
@@ -296,26 +288,22 @@ t('should export a handler for START', (a) => {
 
   const { conditions, keys } = fixtures.conditionsExample
 
-  const value3 = instance.next({ conditions, keys }).value
-  a.deepEqual(value3.CALL.fn, sagas.util.arrayShuffle,
-    'call to sagas.util.arrayShuffle (args not checked)')
-
   const dummyOrder = Object.keys(conditions)
 
-  const value4 = instance.next(dummyOrder).value
-  a.deepEqual(value4.CALL.fn, actions.creators.init,
+  const value3 = instance.next(dummyOrder).value
+  a.deepEqual(value3.CALL.fn, actions.creators.init,
     'call to actions.creators.init (args not checked)')
 
-  const value5 = instance.next({type: 'DUMMY_TYPE', payload: 123}).value
-  a.deepEqual(value5.PUT.action, {type: 'DUMMY_TYPE', payload: 123},
+  const value4 = instance.next({type: 'DUMMY_TYPE', payload: 123}).value
+  a.deepEqual(value4.PUT.action, {type: 'DUMMY_TYPE', payload: 123},
     'put action call')
 
-  const value6 = instance.next().value
-  a.deepEqual(value6.CALL.fn, routerPush,
+  const value5 = instance.next().value
+  a.deepEqual(value5.CALL.fn, routerPush,
     'call to routerPush (args not checked)')
 
-  const value7 = instance.next({type: 'DUMMY_TYPE', payload: 123}).value
-  a.deepEqual(value7.PUT.action, {type: 'DUMMY_TYPE', payload: 123},
+  const value6 = instance.next({type: 'DUMMY_TYPE', payload: 123}).value
+  a.deepEqual(value6.PUT.action, {type: 'DUMMY_TYPE', payload: 123},
     'put action call')
 
   a.ok(instance.next().done, 'handler is complete')
