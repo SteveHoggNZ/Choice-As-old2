@@ -157,6 +157,7 @@
     "flow-bin": "0.23.0",
     "flow-interfaces": "^0.6.0",
     "fs": "0.0.2",
+    "immutablediff": "^0.4.2",
     "isparta-loader": "^2.0.0",
     "karma": "^0.13.21",
     "karma-chrome-launcher": "^0.2.3",

@@ -1,6 +1,7 @@
 import { h, hh, hhh, t } from '../../../../../../test_util'
 import test from 'blue-tape'
 import Immutable from 'immutable'
+import diff from 'immutablediff'
 import uuid from 'uuid-v4'
 import { push as routerPush } from 'react-router-redux'
 import { call, select } from 'redux-saga/effects'
@@ -10,6 +11,7 @@ import { constants, actions, selectors, sagas, initialState, reducer }
   from 'routes/ChoiceAs/routes/Session/modules/session'
 import { selectors as selectorsChoiceAs }
   from 'routes/ChoiceAs/modules/choiceas'
+import { expandedLog, deepDiffMapper } from 'util/debug/tools'
 
 const fixtures = {
   conditionsExample: {
@@ -35,7 +37,12 @@ test('should export constants', (a) => {
     'STOP',
     'LOG',
     'KEY_CLICK',
-    'TRIAL_UPDATE'
+    'SESSION_LOCK',
+    'TRIGGER_REVEAL1',
+    'TRIGGER_REVEAL2',
+    'TRIAL_UPDATE',
+    'TRIAL_RECORD',
+    'TRIAL_SHIFT_CURSOR'
   ]
   for (let name of required) {
     a.notEqual(constants[name], undefined, `constants.${name} exists`)
@@ -85,16 +92,109 @@ test('should export keyClick action', (a) => {
   a.end()
 })
 
+test('should export sessionLock action', (a) => {
+  a.equal(typeof actions.creators.sessionLock, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.sessionLock('1-1-1'),
+    {type: constants.SESSION_LOCK, payload: '1-1-1'},
+    'action defined correctly')
+
+  a.end()
+})
+
+test('should export trialReveal1 action', (a) => {
+  a.equal(typeof actions.creators.trialReveal1, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.trialReveal1('1-1-1',
+    {trialCount: 0, keyStageID: 1}),
+      {
+        type: constants.TRIGGER_REVEAL1,
+        payload: {
+          sessionID: '1-1-1',
+          cursor: {trialCount: 0, keyStageID: 1}
+        }
+      },
+      'action defined correctly')
+
+  a.end()
+})
+
+test('should export trialReveal2 action', (a) => {
+  a.equal(typeof actions.creators.trialReveal2, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.trialReveal2('1-1-1',
+    {trialCount: 0, keyStageID: 1}),
+      {
+        type: constants.TRIGGER_REVEAL2,
+        payload: {
+          sessionID: '1-1-1',
+          cursor: {trialCount: 0, keyStageID: 1}
+        }
+      },
+      'action defined correctly')
+
+  a.end()
+})
+
+test('should export trial action', (a) => {
+  a.equal(typeof actions.creators.sessionLock, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.sessionLock('1-1-1'),
+    {type: constants.SESSION_LOCK, payload: '1-1-1'},
+    'action defined correctly')
+
+  a.end()
+})
+
 test('should export trialUpdate action', (a) => {
   a.equal(typeof actions.creators.trialUpdate, 'function', 'is a function')
 
-  a.deepEqual(actions.creators.trialUpdate('1-1-1', 3, 5),
+  a.deepEqual(actions.creators.trialUpdate(
+    '1-1-1', {trialCount: 5, keyStage: 1},
+    {trialCount: 6, keyStage: 0}, {a: 1}
+  ),
     {
       type: constants.TRIAL_UPDATE,
       payload: {
         sessionID: '1-1-1',
-        nextKeyStageID: 3,
-        nextTrialCount: 5
+        cursor: {trialCount: 5, keyStage: 1},
+        cursorNext: {trialCount: 6, keyStage: 0},
+        record: {a: 1}
+      }
+    }, 'action defined correctly')
+
+  a.end()
+})
+
+test('should export trialRecord action', (a) => {
+  a.equal(typeof actions.creators.trialRecord, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.trialRecord(
+    '1-1-1', {trialCount: 1, keyStageID: 0}, {a: 1}
+  ),
+    {
+      type: constants.TRIAL_RECORD,
+      payload: {
+        sessionID: '1-1-1',
+        cursor: {trialCount: 1, keyStageID: 0},
+        record: {a: 1}
+      }
+    }, 'action defined correctly')
+
+  a.end()
+})
+
+test('should export trialShiftCursor action', (a) => {
+  a.equal(typeof actions.creators.trialShiftCursor, 'function', 'is a function')
+
+  a.deepEqual(actions.creators.trialShiftCursor(
+    '1-1-1', {trialCount: 6, keyStage: 0}
+  ),
+    {
+      type: constants.TRIAL_SHIFT_CURSOR,
+      payload: {
+        sessionID: '1-1-1',
+        cursorNext: {trialCount: 6, keyStage: 0},
       }
     }, 'action defined correctly')
 
@@ -141,38 +241,216 @@ test('should handle INIT', (a) => {
   a.ok(output.equals(Immutable.fromJS({
     '1-1-1': {
       conditionID: 'C2',
-      keyStageID: 0,
-      trialCount: 0,
+      locked: false,
+      cursor: {
+        keyStageID: 0,
+        trialCount: 0
+      },
+      trials: [],
       log: []
     }
   })), 'inits the run state')
 })
 
-test('should handle TRIAL_UPDATE', (a) => {
+test('should handle SESSION_LOCK', (a) => {
   a.plan(2)
+  a.equal(typeof actions.handlers[constants.SESSION_LOCK], 'function',
+    'handler function is defined')
 
-  a.equal(typeof actions.handlers[constants.TRIAL_UPDATE], 'function',
+  const state = Immutable.fromJS({'1-1-1': {locked: false}})
+  const action = {payload: '1-1-1'}
+  const output = actions.handlers[constants.SESSION_LOCK](state, action)
+
+  a.ok(output.equals(Immutable.fromJS({'1-1-1': {locked: true}})),
+    'locks the session')
+})
+
+test('should handle TRIGGER_REVEAL1', (a) => {
+  a.plan(2)
+  a.equal(typeof actions.handlers[constants.TRIGGER_REVEAL1], 'function',
     'handler function is defined')
 
   const state = Immutable.fromJS({
-    '2-2-2': {
-      keyStageID: 1,
-      trialCount: 3
+    '1-1-1': {
+      trials: [
+        [{}, {}],
+        [{}, {}]
+      ]
     }
   })
   const action = {
     payload: {
-      sessionID: '2-2-2', nextKeyStageID: 10, nextTrialCount: 22
+      sessionID: '1-1-1',
+      cursor: {trialCount: 1, keyStageID: 1}
     }
   }
-  const output = actions.handlers[constants.TRIAL_UPDATE](state, action)
+
+  const output = actions.handlers[constants.TRIGGER_REVEAL1](state, action)
 
   a.ok(output.equals(Immutable.fromJS({
-    '2-2-2': {
-      keyStageID: 10,
-      trialCount: 22
+    '1-1-1': {
+      trials: [
+        [{}, {}],
+        [{}, {reveal1: true}]
+      ]
     }
-  })))
+  })), 'sets reveal1 on the correct trial location')
+})
+
+test('should handle TRIGGER_REVEAL2', (a) => {
+  a.plan(2)
+  a.equal(typeof actions.handlers[constants.TRIGGER_REVEAL2], 'function',
+    'handler function is defined')
+
+  const state = Immutable.fromJS({
+    '1-1-1': {
+      trials: [
+        [{}, {}],
+        [{}]
+      ]
+    }
+  })
+  const action = {
+    payload: {
+      sessionID: '1-1-1',
+      cursor: {trialCount: 1, keyStageID: 0}
+    }
+  }
+
+  const output = actions.handlers[constants.TRIGGER_REVEAL2](state, action)
+
+  a.ok(output.equals(Immutable.fromJS({
+    '1-1-1': {
+      trials: [
+        [{}, {}],
+        [{reveal2: true}]
+      ]
+    }
+  })), 'sets reveal2 at the correct trial location')
+})
+
+test('should handle TRIAL_RECORD', (a) => {
+  a.equal(typeof actions.handlers[constants.TRIAL_RECORD], 'function',
+    'handler function is defined')
+
+  const state = Immutable.fromJS({
+    '1-1-1': {
+      trials: [
+        [{}, {}]
+      ]
+    }
+  })
+
+  const action = {
+    payload: {
+      sessionID: '1-1-1',
+      cursor: {trialCount: 1, keyStageID: 0},
+      record: {testval: 123}
+    }
+  }
+
+  const output = actions.handlers[constants.TRIAL_RECORD](state, action)
+
+  a.ok(output.equals(Immutable.fromJS({
+    '1-1-1': {
+      trials: [
+        [{}, {}],
+        [{testval: 123}]
+      ]
+    }
+  })), 'sets record at the correct trial location')
+
+  a.end()
+})
+
+test('should handle TRIAL_SHIFT_CURSOR', (a) => {
+  a.plan(2)
+  a.equal(typeof actions.handlers[constants.TRIAL_SHIFT_CURSOR], 'function',
+    'handler function is defined')
+
+  const state = Immutable.fromJS({
+    '1-1-1': {
+      locked: true,
+      cursor: {trialCount: 1, keyStageID: 1},
+      trials: [
+        [{}, {}]
+      ]
+    }
+  })
+
+  const action = {
+    payload: {
+      sessionID: '1-1-1',
+      cursorNext: {trialCount: 2, keyStageID: 0}
+    }
+  }
+
+  const output = actions.handlers[constants.TRIAL_SHIFT_CURSOR](state, action)
+
+  a.ok(output.equals(Immutable.fromJS({
+    '1-1-1': {
+      locked: false,
+      cursor: {trialCount: 2, keyStageID: 0},
+      trials: [
+        [{}, {}]
+      ]
+    }
+  })), 'sets the cursor and the session lock')
+})
+
+test('should handle TRIAL_UPDATE', (a) => {
+  a.equal(typeof actions.handlers[constants.TRIAL_UPDATE], 'function',
+    'handler function is defined')
+
+  const state1 = Immutable.fromJS({
+    '2-2-2': {
+      cursor: {trialCount: 0, keyStageID: 0},
+      trials: []
+    }
+  })
+
+  const action1 = {
+    payload: {
+      sessionID: '2-2-2',
+      cursor: {trialCount: 0, keyStageID: 0},
+      cursorNext: {trialCount: 0, keyStageID: 1},
+      record: {testRecord: 1}
+    }
+  }
+
+  const state2 = actions.handlers[constants.TRIAL_UPDATE](state1, action1)
+  const expected2 = Immutable.fromJS({
+    '2-2-2': {
+      cursor: {trialCount: 0, keyStageID: 1},
+      trials: [
+        [ {testRecord: 1} ]
+      ]
+    }
+  })
+
+  a.ok(state2.equals(expected2), 'initial update works')
+
+  const action2 = {
+    payload: {
+      sessionID: '2-2-2',
+      cursor: {trialCount: 0, keyStageID: 1},
+      cursorNext: {trialCount: 1, keyStageID: 0},
+      record: {testRecord: 2}
+    }
+  }
+  const state3 = actions.handlers[constants.TRIAL_UPDATE](state2, action2)
+  const expected3 = Immutable.fromJS({
+    '2-2-2': {
+      cursor: {trialCount: 1, keyStageID: 0},
+      trials: [
+        [ {testRecord: 1}, {testRecord: 2} ]
+      ]
+    }
+  })
+
+  a.ok(state3.equals(expected3), 'second update works')
+
+  a.end()
 })
 
 test('should handle LOG', (a) => {

@@ -37,8 +37,6 @@ const makeSagaMain = ({handlers}) =>
   function * sagaMain ({wrapper = wrapHandler} = {}) {
     // fork a monitor for each defined handler
     const makeMonitor = (name) => {
-      console.warn('Created sagaMain monitoring for', name)
-
       return function * () {
         yield * takeEvery(name, wrapper({...handlers[name]}))
       }

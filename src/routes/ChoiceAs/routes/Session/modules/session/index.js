@@ -23,11 +23,19 @@ const INIT = `${PREFIX}INIT`
 const STOP = `${PREFIX}STOP`
 const LOG = `${PREFIX}LOG`
 const KEY_CLICK = `${PREFIX}KEY_CLICK`
+const SESSION_LOCK = `${PREFIX}SESSION_LOCK`
+const TRIGGER_REVEAL1 = `${PREFIX}TRIGGER_REVEAL1`
+const TRIGGER_REVEAL2 = `${PREFIX}TRIGGER_REVEAL2`
+/* TODO, remove TRIAL_UPDATE */
 const TRIAL_UPDATE = `${PREFIX}TRIAL_UPDATE`
+const TRIAL_RECORD = `${PREFIX}TRIAL_RECORD`
+const TRIAL_SHIFT_CURSOR = `${PREFIX}TRIAL_SHIFT_CURSOR`
 
 export const constants = {
   STATE_PATH, ROUTE_PATH, PREFIX, ERROR,
-  START, INIT, STOP, LOG, KEY_CLICK, TRIAL_UPDATE
+  START, INIT, STOP, LOG, KEY_CLICK, SESSION_LOCK,
+  TRIGGER_REVEAL1, TRIGGER_REVEAL2,
+  TRIAL_UPDATE, TRIAL_RECORD, TRIAL_SHIFT_CURSOR
 }
 
 /* actions */
@@ -61,21 +69,67 @@ const keyClick = (sessionID: string, keyID: string): Action => {
   }
 }
 
+const sessionLock = (sessionID: string): Action => {
+  return {
+    type: constants.SESSION_LOCK,
+    payload: sessionID
+  }
+}
+
+const trialReveal1 = (sessionID: string, cursor: object): Action => {
+  return {
+    type: constants.TRIGGER_REVEAL1,
+    payload: {
+      sessionID,
+      cursor
+    }
+  }
+}
+
+const trialReveal2 = (sessionID: string, cursor: object): Action => {
+  return {
+    type: constants.TRIGGER_REVEAL2,
+    payload: {
+      sessionID,
+      cursor
+    }
+  }
+}
+
 const trialUpdate = (
   sessionID: string,
-  keyStageID: number, trialCount: number,
-  nextKeyStageID: number, nextTrialCount: number,
+  cursor: object,
+  cursorNext: object,
   record: string
 ): Action => {
   return {
     type: constants.TRIAL_UPDATE,
     payload: {
       sessionID,
-      keyStageID,
-      trialCount,
-      nextKeyStageID,
-      nextTrialCount,
+      cursor,
+      cursorNext,
       record
+    }
+  }
+}
+
+const trialRecord = (sessionID: string, cursor: object, record: string): Action => {
+  return {
+    type: constants.TRIAL_RECORD,
+    payload: {
+      sessionID,
+      cursor,
+      record
+    }
+  }
+}
+
+const trialShiftCursor = (sessionID: string, cursorNext: object): Action => {
+  return {
+    type: constants.TRIAL_SHIFT_CURSOR,
+    payload: {
+      sessionID,
+      cursorNext
     }
   }
 }
@@ -102,7 +156,12 @@ const ACTION_CREATORS = {
   stop,
   log,
   keyClick,
-  trialUpdate
+  sessionLock,
+  trialReveal1,
+  trialReveal2,
+  trialUpdate,
+  trialRecord,
+  trialShiftCursor
 }
 
 /* - action handlers */
@@ -111,27 +170,61 @@ const ACTION_HANDLERS = {
     return state.set(action.payload.sessionID,
       Immutable.fromJS({
         conditionID: action.payload.conditionID,
-        keyStageID: 0,
-        trialCount: 0,
+        locked: false,
+        cursor: {
+          trialCount: 0,
+          keyStageID: 0
+        },
         trials: [],
         log: []
       }))
   },
+  [constants.SESSION_LOCK]: (state: object, action: {payload: object}): object => {
+    const sessionID = action.payload
+    return state.setIn([sessionID, 'locked'], true)
+  },
+  [constants.TRIGGER_REVEAL1]: (state: object, action: {payload: object}): object => {
+    const { sessionID, cursor } = action.payload
+    return state.updateIn(
+      [sessionID, 'trials', cursor.trialCount, cursor.keyStageID], (stage) => {
+        return stage.set('reveal1', true)
+      })
+  },
+  [constants.TRIGGER_REVEAL2]: (state: object, action: {payload: object}): object => {
+    const { sessionID, cursor } = action.payload
+    return state.updateIn(
+      [sessionID, 'trials', cursor.trialCount, cursor.keyStageID], (stage) => {
+        return stage.set('reveal2', true)
+      })
+  },
+  [constants.TRIAL_RECORD]: (state: object, action: {payload: object}): object => {
+    const { sessionID, cursor, record } = action.payload
+    return state.updateIn(
+      [sessionID, 'trials', cursor.trialCount], (trial) => {
+        return trial
+          ? trial.push(Immutable.fromJS(record)) : Immutable.fromJS([record])
+      })
+  },
+  [constants.TRIAL_SHIFT_CURSOR]: (state: object, action: {payload: object}): object => {
+    const { sessionID, cursorNext } = action.payload
+    return state.withMutations((s) => {
+      return s.setIn([sessionID, 'locked'], false)
+        .setIn([sessionID, 'cursor'], Immutable.fromJS(cursorNext))
+    })
+  },
   [constants.TRIAL_UPDATE]: (state: object, action: {payload: object}): object => {
     const {
       sessionID,
-      keyStageID,
-      trialCount,
-      nextKeyStageID,
-      nextTrialCount,
+      cursor,
+      cursorNext,
       record
     } = action.payload
     return state.withMutations((s) => {
-      s.setIn([sessionID, 'keyStageID'], nextKeyStageID)
-        .setIn([sessionID, 'trialCount'], nextTrialCount)
+      s.setIn([sessionID, 'cursor'], Immutable.fromJS(cursorNext))
 
-      s.updateIn([sessionID, 'trials', trialCount], (trial) => {
-        return trial ? trial.push(record) : Immutable.fromJS([record])
+      s.updateIn([sessionID, 'trials', cursor.trialCount], (trial) => {
+        return trial
+          ? trial.push(Immutable.fromJS(record)) : Immutable.fromJS([record])
       })
 
       return s
@@ -180,7 +273,7 @@ const makeGetSession = () => createSelector(
   /* this isn't working so great at the moment; error is called below */
   [ _getSession ],
   (session) => {
-    console.error('really getting session')
+    console.info('really getting session')
     return session && session.toJS()
   }
 )
@@ -238,14 +331,16 @@ const SAGA_HANDLERS = {
       yield put(actions.creators
         .log(sessionID, `Key click ${keyID}`))
 
+      yield put(actions.creators.sessionLock(sessionID))
+
       const { conditions, keys } =
         yield select(selectorsChoiceAs.getConditionsAndKeys)
 
       const condition = conditions[session.conditionID]
 
-      const { keyStageID, trialCount } = session
+      const { keyStageID, trialCount } = session.cursor
 
-      const keyStage = condition.keys[session.keyStageID]
+      const keyStage = condition.keys[session.cursor.keyStageID]
 
       const keyStageFull = keyStage
         .reduce((acc, key) => ({
@@ -277,7 +372,7 @@ const SAGA_HANDLERS = {
         previousKey = session.trials[trialCount][keyStageID - 1].reinforcerKey
         // get the first of the previous stage's keys that doesn't match
         // the previous key
-        reinforcerKey = condition.keys[session.keyStageID - 1]
+        reinforcerKey = condition.keys[session.cursor.keyStageID - 1]
           .filter((id) => id !== previousKey)[0]
       } else {
         reinforcerKey = reinforcer
@@ -287,12 +382,29 @@ const SAGA_HANDLERS = {
         `Reinforcer Location: ${reinforcerKey}
           ${reinforcer !== reinforcerKey ? ' (' + reinforcer + ')' : ''}`))
 
-      const record = {reinforcer, reinforcerKey, previousKey}
+      const cursor = {trialCount, keyStageID}
+      const cursorNext = {trialCount: nextTrialCount, keyStageID: nextKeyStageID}
+      const record = {clickedKey: keyID, reinforcerKey, reinforcer, previousKey}
 
-      yield put(actions.creators.trialUpdate(
-        sessionID,
-        keyStage, trialCount,
-        nextKeyStageID, nextTrialCount, record))
+      yield put(actions.creators.trialRecord(sessionID, cursor, record))
+      yield put(actions.creators.trialReveal1(sessionID, cursor))
+
+      const revealDelay = 2000
+      yield call(delay, revealDelay)
+
+      yield put(actions.creators.trialReveal2(sessionID, cursor))
+
+      if (condition.iti && condition.iti !== 0) {
+        yield put(actions.creators.log(sessionID,
+          `ITI pause ${condition.iti} seconds`))
+
+        yield call(delay, condition.iti * 1000 - revealDelay)
+
+        yield put(actions.creators.log(sessionID,
+          'ITI wake up'))
+      }
+
+      yield put(actions.creators.trialShiftCursor(sessionID, cursorNext))
     },
     errorHandler: sagaErrorHandler
   },

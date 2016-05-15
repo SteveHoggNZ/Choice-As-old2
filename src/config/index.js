@@ -1,18 +1,18 @@
 export default {
   conditions: {
-    C1: { name: 'condition 1', trials: 10, iti: 15,
+    C1: { name: 'condition 1', trials: 10, iti: 3,
       keys: [
         ['L5', 'R5'],
         ['STAY_0.1', 'SWITCH_0.9']
       ]
     },
-    C2: { name: 'condition 2', trials: 10, iti: 15,
+    C2: { name: 'condition 2', trials: 10, iti: 3,
       keys: [
         ['L5', 'R5'],
         ['L5', 'R5']
       ]
     },
-    C3: { name: 'condition 3', trials: 10, iti: 15,
+    C3: { name: 'condition 3', trials: 10, iti: 3,
       keys: [
         ['L5', 'R5'],
         ['STAY_0.9', 'SWITCH_0.1']

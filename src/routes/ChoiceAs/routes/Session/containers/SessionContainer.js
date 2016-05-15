@@ -1,7 +1,7 @@
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { constants, actions, selectors } from '../modules/session'
-// import { selectors as selectorsChoiceAs } from '../../../modules/choiceas'
+import { selectors as selectorsChoiceAs } from '../../../modules/choiceas'
 
 import ChoiceAsSession from 'components/ChoiceAs/ChoiceAsSession'
 
@@ -23,7 +23,8 @@ const makeMapStateToProps = () => {
     return {
       sessionID,
       // sessionState: selectors.getSessionState(state, {test: true}), // *** TODO, remove ***
-      session: getSession(state, {sessionID})
+      session: getSession(state, {sessionID}),
+      entities: selectorsChoiceAs.getConditionsAndKeys(state)
     }
   }
 }

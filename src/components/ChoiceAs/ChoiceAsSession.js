@@ -20,9 +20,10 @@ ChoiceAsSessionButton.propTypes = {
 }
 
 export const ChoiceAsSession = (props: Props) => {
-  const infoClickHandle = () => {
-    console.warn('valid id?', props.session !== undefined)
-  }
+  // TODO, check for valid session and redirect if not?
+  // const infoClickHandle = () => {
+  //   console.warn('valid id?', props.session !== undefined)
+  // }
 
   const buildLog = () => {
     if (props.session && props.session.log) {
@@ -31,6 +32,12 @@ export const ChoiceAsSession = (props: Props) => {
         .map((v) => <li key={i++}>{props.session.log.length + 1 - i} {v}</li>)
     }
   }
+
+  const { cursor, trials } = props.session || {}
+
+  const trial = cursor && trials && trials[cursor.trialCount] &&
+    trials[cursor.trialCount][cursor.keyStageID] &&
+      trials[cursor.trialCount][cursor.keyStageID] || undefined
 
   return <div>
     {!props.sessionID &&
@@ -42,10 +49,26 @@ export const ChoiceAsSession = (props: Props) => {
         <ChoiceAsSessionButton startClick={props.startClick}
           conditionID='C3' conditionName='Condition 3' />
       </div>}
-    {props.sessionID &&
-      <div className={classes.choiceContainer} onClick={infoClickHandle}>
-        <ChoiceKey id='L1' sessionID={props.sessionID} keyClick={props.keyClick} />
-        <ChoiceKey id='R1' sessionID={props.sessionID} keyClick={props.keyClick} />
+    {props.session && props.sessionID &&
+      <div className={classes.choiceContainer}>
+        {props.entities.conditions[props.session.conditionID].keys[0]
+          .map((k, i) => {
+            const wasClicked = trial && trial.clickedKey &&
+              trial.clickedKey === k
+            const hasReinforcer = trial && trial.reinforcerKey &&
+              trial.reinforcerKey === k
+            return <ChoiceKey key={i} id={k}
+              sessionID={props.sessionID}
+              session={props.session}
+              wasClicked={wasClicked}
+              hasReinforcer={hasReinforcer}
+              reveal={
+                wasClicked && trial && trial.reveal1 ||
+                !wasClicked && trial && trial.reveal2 && hasReinforcer
+              }
+              keyClick={props.keyClick} />
+          }
+        )}
       </div>}
     <br />
     <ul className={classes.choiceLog}>{buildLog()}</ul>
@@ -56,6 +79,7 @@ ChoiceAsSession.propTypes = {
   sessionID: React.PropTypes.string,
   // sessionState: React.PropTypes.object.isRequired,
   session: React.PropTypes.object,
+  entities: React.PropTypes.object.isRequired,
   startClick: React.PropTypes.func.isRequired,
   keyClick: React.PropTypes.func.isRequired
 }
