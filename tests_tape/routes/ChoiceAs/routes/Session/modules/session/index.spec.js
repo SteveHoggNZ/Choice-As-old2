@@ -532,6 +532,8 @@ test('should export makeGetSession', (a) => {
 
   a.equal(typeof getSession, 'function', 'get is a function')
 
+  // TODO, test correctCount attribute 
+
   const startState = Immutable.fromJS({
     [constants.STATE_PATH]: {
       '1-1-1': { test: true },

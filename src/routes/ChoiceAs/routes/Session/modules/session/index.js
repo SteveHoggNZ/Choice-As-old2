@@ -274,6 +274,7 @@ const makeGetSession = () => createSelector(
   [ _getSession ],
   (session) => {
     // count all keys that were clicked on that had the reinforcer
+    // TODO, test correctCount
     const correctCount = session && session.get('trials')
       .reduce((acc, trial) => acc + trial
         .reduce((acc2, stage) => {
@@ -289,8 +290,7 @@ const makeGetSession = () => createSelector(
 
 
 export const selectors = {
-  // *** TODO, remove getSessionState
-  getSessionState,
+
   makeGetSession
 }
 
