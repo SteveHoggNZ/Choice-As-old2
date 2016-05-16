@@ -3,14 +3,28 @@
   justify-content: space-around;
 }
 
-.choiceKey {
-  border: 1px solid #C0C0C0;
-  padding: 40px 10px;
-}
-
 .choiceLog {
   text-align: left;
   list-style-type: none;
+}
+
+.choiceKeyBox {
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.duck {
+  display: block;
+  width: 120px;
+  margin: 1.5rem auto;
 }
 
 .testResultsContainer {

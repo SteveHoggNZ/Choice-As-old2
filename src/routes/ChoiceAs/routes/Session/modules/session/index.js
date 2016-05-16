@@ -270,13 +270,23 @@ const _getSession = (state, props) => {
 }
 
 const makeGetSession = () => createSelector(
-  /* this isn't working so great at the moment; error is called below */
+  /* TODO, this isn't working so great at the moment; error is called below */
   [ _getSession ],
   (session) => {
+    // count all keys that were clicked on that had the reinforcer
+    const correctCount = session && session.get('trials')
+      .reduce((acc, trial) => acc + trial
+        .reduce((acc2, stage) => {
+          return acc2 +
+            (stage.get('clickedKey') === stage.get('reinforcerKey') ? 1 : 0)
+        }, 0 /* acc2 */), 0 /* acc */) || 0
+
+
     console.info('really getting session')
-    return session && session.toJS()
+    return session && {...session.toJS(), correctCount}
   }
 )
+
 
 export const selectors = {
   // *** TODO, remove getSessionState
@@ -389,7 +399,7 @@ const SAGA_HANDLERS = {
       yield put(actions.creators.trialRecord(sessionID, cursor, record))
       yield put(actions.creators.trialReveal1(sessionID, cursor))
 
-      const revealDelay = 2000
+      const revealDelay = 1500
       yield call(delay, revealDelay)
 
       yield put(actions.creators.trialReveal2(sessionID, cursor))

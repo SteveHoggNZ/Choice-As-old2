@@ -39,6 +39,7 @@ export default {
   }
 }
 
-// condition has sessions has trials
-// condition 2 is never run first (.5 .5)
-// inter-trial-interval, random or stable
+// Notes / Questions
+// a condition has sessions which has trials
+// condition 2 (.5 .5) is never run first
+// inter-trial-interval, random or stable?

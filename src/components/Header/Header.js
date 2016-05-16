@@ -9,10 +9,6 @@ export const Header = () => (
       Home
     </IndexLink>
     {' · '}
-    <IndexLink to='/choiceas' activeClassName={classes.activeRoute}>
-      Choice As
-    </IndexLink>
-    {' · '}
     <Link to='/choiceas/session' activeClassName={classes.activeRoute}>
       Choice As Session
     </Link>

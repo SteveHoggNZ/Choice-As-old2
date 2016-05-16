@@ -33,7 +33,7 @@ export const ChoiceAsSession = (props: Props) => {
     }
   }
 
-  const { cursor, trials } = props.session || {}
+  const { cursor, trials, correctCount } = props.session || {}
 
   const trial = cursor && trials && trials[cursor.trialCount] &&
     trials[cursor.trialCount][cursor.keyStageID] &&
@@ -50,28 +50,32 @@ export const ChoiceAsSession = (props: Props) => {
           conditionID='C3' conditionName='Condition 3' />
       </div>}
     {props.session && props.sessionID &&
-      <div className={classes.choiceContainer}>
-        {props.entities.conditions[props.session.conditionID].keys[0]
-          .map((k, i) => {
-            const wasClicked = trial && trial.clickedKey &&
-              trial.clickedKey === k
-            const hasReinforcer = trial && trial.reinforcerKey &&
-              trial.reinforcerKey === k
-            return <ChoiceKey key={i} id={k}
-              sessionID={props.sessionID}
-              session={props.session}
-              wasClicked={wasClicked}
-              hasReinforcer={hasReinforcer}
-              reveal={
-                wasClicked && trial && trial.reveal1 ||
-                !wasClicked && trial && trial.reveal2 && hasReinforcer
-              }
-              keyClick={props.keyClick} />
-          }
-        )}
+      <div>
+        <div className={classes.choiceContainer}>
+          {props.entities.conditions[props.session.conditionID].keys[0]
+            .map((k, i) => {
+              const wasClicked = trial && trial.clickedKey &&
+                trial.clickedKey === k
+              const hasReinforcer = trial && trial.reinforcerKey &&
+                trial.reinforcerKey === k
+              return <ChoiceKey key={i} id={k}
+                sessionID={props.sessionID}
+                session={props.session}
+                wasClicked={wasClicked}
+                hasReinforcer={hasReinforcer}
+                reveal={
+                  wasClicked && trial && trial.reveal1 ||
+                  !wasClicked && trial && trial.reveal2 && hasReinforcer
+                }
+                keyClick={props.keyClick} />
+            }
+          )}
+        </div>
+        <br />
+        <h2>You've found {correctCount} duck{correctCount === 1 ? '' : 's'}</h2>
+        <br />
+        <ul className={classes.choiceLog}>{buildLog()}</ul>
       </div>}
-    <br />
-    <ul className={classes.choiceLog}>{buildLog()}</ul>
   </div>
 }
 
