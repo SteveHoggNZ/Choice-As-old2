@@ -1,13 +1,18 @@
-Current Goal: Write tests that prove reinforcer probabilities for conditions
+Current Goal: Change back to non-immutable root for state
 
 Future Goals:
-- Change back to non-immutable root for state
-- Unit test interface
-- Add Flow type notation
-- Re-write tests in Mocha for comparison
+- Change back to Mocha tests and unit test interface
 - Travis CI badge?
-- Write initial click-n-show reinforcer code
+- Add Flow type notation
 - Work out where the trial data is recorded to (Google Sheets?)
+
+================================================================================
+
+Current Goal: Write initial click-n-show reinforcer code
+
+================================================================================
+
+Current Goal: Write tests that prove reinforcer probabilities for conditions
 
 Condition === Setup
 

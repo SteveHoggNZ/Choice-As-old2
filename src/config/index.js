@@ -1,3 +1,4 @@
+// Conditions have sessions which have trials
 export default {
   conditions: {
     C1: { name: 'condition 1', trials: 10, iti: 3,
@@ -30,16 +31,40 @@ export default {
     'STAY_0.9': { name: 'stay', probability: 0.9 },
     'SWITCH_0.1': { name: 'switch', probability: 0.1 },
     'SWITCH_0.9': { name: 'switch', probability: 0.9 }
-  },
+  }
+  /*
+  // possible start condition syntax. It's probably not needed as it's more
+  // likely manual condition selection is done as a subject is unlikely to
+  // sit down and do multiple conditions in succession.
   settings: {
     startCondition: {
       type: 'random',
       from: ['C1', 'C3']
     }
   }
+  */
 }
 
 // Notes / Questions
-// a condition has sessions which has trials
-// condition 2 (.5 .5) is never run first
-// inter-trial-interval, random or stable?
+
+// Possible conditional syntax
+//    Paula mentioned possibly having the second trial set depend on the first
+/*
+C1: {
+  keys: [
+    ['L33', 'C33', 'R33'],
+    [
+      ['L33', 'STAY'],    // if L33 then STAY
+      ['C33', 'SWITCH'],  // if C33 then SWITCH. C for center
+      ['R33', '??']
+      // this maybe better as an object literal so we can handle multiple
+      // options per condition (I mean logic condition rather
+      // than experiment Condition)
+    ]
+  ]
+}
+*/
+
+// condition 2 (.5 .5) is never run first; this is enforced manually
+//  i.e. the experimenter starts a particular condition by clicking a button
+// inter-trial-interval, random or stable? Sarah mentioned random ITI
